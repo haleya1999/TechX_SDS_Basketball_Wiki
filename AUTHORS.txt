@@ -1,1 +1,4 @@
 TODO(Checkpoint Requirement 1 of 3): Add team member names and emails.
+Haley Arzu <haley_arzu@techexchange.in>
+Maize Booker <maize.booker@techexchange.in>
+Khloe Wright <kpwright@techexchange.in>
