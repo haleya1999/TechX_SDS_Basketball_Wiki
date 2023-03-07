@@ -1,5 +1,7 @@
-from flask import render_template
+from flask import render_template, request, redirect
 from flaskr.backend import Backend
+import os
+
 def make_endpoints(app):
     backend = Backend()
     # Flask uses the "app.route" decorator to call methods when users
@@ -8,7 +10,7 @@ def make_endpoints(app):
     def home():
         # TODO(Checkpoint Requirement 2 of 3): Change this to use render_template
         # to render main.html on the home page.
-        return render_template('main.html')
+        return render_template('main.html', user = "haley")
     @app.route("/pages")
     def pages():
         pages = backend.get_all_page_names()
@@ -20,4 +22,22 @@ def make_endpoints(app):
         #khloe = backend.get_image() -> add image
         #maize = backend.get_image() -> add image
         return render_template('about.html', haley_img = haley)
+
+    @app.route("/upload", methods=['Get', 'POST'])
+    def upload_file():
+        if request.method == 'POST':
+        # check if the post request has the file part
+            if 'file' not in request.files:
+                return redirect(request.url)
+            file = request.files['file']
+            # If the user does not select a file
+            if file.filename == '':
+                return redirect(request.url)
+            else:
+                print(file.filename)
+                print(file)
+                file.save(os.path.abspath(file.filename))
+                backend.upload(file.filename)
+                return redirect(request.url)
+        return render_template('uploads.html', user = "haley")
     # TODO(Project 1): Implement additional routes according to the project requirements.
