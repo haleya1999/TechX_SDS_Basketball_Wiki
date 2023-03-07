@@ -40,4 +40,12 @@ def make_endpoints(app):
                 backend.upload(file.filename)
                 return redirect(request.url)
         return render_template('uploads.html', user = "haley")
+        
+    @app.route("/login")
+    def login():
+        return render_template('login.html')
+
+    @app.route("/signup")
+    def signup():
+        return render_template('signup.html')
     # TODO(Project 1): Implement additional routes according to the project requirements.
