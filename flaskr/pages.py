@@ -20,4 +20,12 @@ def make_endpoints(app):
         #khloe = backend.get_image() -> add image
         #maize = backend.get_image() -> add image
         return render_template('about.html', haley_img = haley)
+
+    @app.route("/login")
+    def login():
+        return render_template('login.html')
+
+    @app.route("/signup")
+    def signup():
+        return render_template('signup.html')
     # TODO(Project 1): Implement additional routes according to the project requirements.
