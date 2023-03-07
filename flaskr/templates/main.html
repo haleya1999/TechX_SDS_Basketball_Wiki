@@ -1,20 +1,27 @@
 <!DOCTYPE html>
 <html>
+   
 
 <head>
     <head>
-        <!-- TODO(Checkpoint Requirement 3): Change the title and content of your wiki.-->
-        <title>Project 1</title>
+        <title> {%block page_name%} Basketball Player Wiki {%endblock%} </title>
     </head>
 </head>
 
+
+{%block navigation %}
+<!--If logged in pass user = 'username' to any page that extends main-->
+<div id= "navigation">
+    <a href="/"> Home</a> <a href= "/pages">Pages</a> <a href= "/about">About</a>  |{% if user %} {{user}} | <a href="/upload"> Upload</a> <a href= "/logout">Logout</a> {% else %} <a href= "/login">Login</a> <a href= "/signup">Signup</a> {% endif %}
+</div>
+{%endblock%}
+
+{%block content %}
 <body>
-    <!-- TODO(Project 1): Implement routes. -->
-    <div>       
-        <!-- TODO(Checkpoint Requirement 3): Change the title and content of your wiki.-->
-        Hello World!
-        <a href="/pages">Pages</a> 
+    <div> 
+        <h2><p>&#127936; Home  &#127936;</p></h2>
     </div>
 </body>
+{% endblock %}
 
 </html>

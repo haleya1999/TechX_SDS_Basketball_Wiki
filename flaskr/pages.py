@@ -13,4 +13,11 @@ def make_endpoints(app):
     def pages():
         pages = backend.get_all_page_names()
         return render_template('pages.html', pages=pages)
+
+    @app.route("/about")
+    def about():
+        haley = backend.get_image('ironheart.jpg')
+        #khloe = backend.get_image() -> add image
+        #maize = backend.get_image() -> add image
+        return render_template('about.html', haley_img = haley)
     # TODO(Project 1): Implement additional routes according to the project requirements.
