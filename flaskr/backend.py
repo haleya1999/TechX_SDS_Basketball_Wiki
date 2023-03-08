@@ -7,15 +7,15 @@ user_bucket = storage_client.bucket('users-passwds')
 
 class Backend:
 
-    def __init__(self):
+    def __init__(self, storage_client=storage_client):
         self.pages = []
-        
+        self.myStorageClient = storage_client
     def get_wiki_page(self, name):
         pass
 
     def get_all_page_names(self):
         bucket_name = "wiki-contents"
-        all_pages = storage_client.list_blobs(bucket_name)
+        all_pages = self.myStorageClient.list_blobs(bucket_name)
         for page in all_pages:
             self.pages.append(page)
         return self.pages
