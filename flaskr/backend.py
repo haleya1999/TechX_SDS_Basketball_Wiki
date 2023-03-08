@@ -1,5 +1,6 @@
 # TODO(Project 1): Implement Backend according to the requirements.
 from google.cloud import storage
+import os
 
 storage_client = storage.Client()
 content_bucket = storage_client.bucket('wiki-contents')
@@ -20,8 +21,12 @@ class Backend:
             self.pages.append(page)
         return self.pages
 
-    def upload(self):
-        pass
+    def upload(self, source_name):
+        blob = content_bucket.blob(source_name)
+        generation_match_precondition = 0
+        blob.upload_from_filename(source_name, if_generation_match=generation_match_precondition)
+        os.remove(source_name)
+        
 
     def sign_up(self):
         pass
