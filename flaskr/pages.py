@@ -11,18 +11,18 @@ def make_endpoints(app):
     def home():
         # TODO(Checkpoint Requirement 2 of 3): Change this to use render_template
         # to render main.html on the home page.
-        return render_template('main.html')
+        return render_template('main.html', user = backend.user)
     @app.route("/pages")
     def pages():
         pages = backend.get_all_page_names()
-        return render_template('pages.html', pages=pages)
+        return render_template('pages.html', pages=pages, user = backend.user)
 
     @app.route("/about")
     def about():
         haley = backend.get_image('ironheart.jpg')
         khloe = backend.get_image('HeadshotKhloeWrightFINAL.jpg')
-        #maize = backend.get_image() -> add image
-        return render_template('about.html', haley_img = haley, khloe_img = khloe)
+        maize = backend.get_image('anon.png')
+        return render_template('about.html', haley_img = haley, khloe_img = khloe, maize_img = maize, user = backend.user)
 
     @app.route("/upload", methods=['Get', 'POST'])
     def upload_file():
@@ -40,7 +40,7 @@ def make_endpoints(app):
                 file.save(os.path.abspath(filename))
                 backend.upload(file.filename)
                 return redirect(request.url)
-        return render_template('uploads.html')
+        return render_template('uploads.html', user = backend.user)
         
     @app.route("/login")
     def login():
