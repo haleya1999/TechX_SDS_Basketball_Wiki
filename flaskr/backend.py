@@ -167,7 +167,8 @@ class Backend:
             return False
 
     def logout(self):
-        self.user = 0
+        if self.user != 0:
+            self.user = 0
 
     def get_image(self, img_name):
         """Get specified image public url
