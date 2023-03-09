@@ -21,7 +21,7 @@ def client(app):
 def test_home_page(client):
     resp = client.get("/")
     assert resp.status_code == 200
-    assert b"Hello, World!\n" in resp.data
+    assert b"Basketball Player Wiki" in resp.data
 
 def test_about_page(client):
     get = client.get("/about")
@@ -36,3 +36,8 @@ def test_upload_page(client):
     post = client.post("/upload")
     assert post.status_code == 302
 # TODO(Project 1): Write tests for other routes.
+def test_pages(client):
+    resp = client.get("/pages")
+    assert resp.status_code == 200
+    assert b"All Pages" in resp.data
+

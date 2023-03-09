@@ -12,11 +12,17 @@ def make_endpoints(app):
         # TODO(Checkpoint Requirement 2 of 3): Change this to use render_template
         # to render main.html on the home page.
         return render_template('main.html', user = backend.user)
+
     @app.route("/pages")
     def pages():
         pages = backend.get_all_page_names()
-        return render_template('pages.html', pages=pages, user = backend.user)
-
+        return render_template('pages.html', pages=pages), user = backend.user
+    @app.route("/pages/<path:subpath>")
+    def get_page(subpath):
+        page = backend.get_wiki_page(subpath)
+        with page.open("r") as page:
+            data = page.read()
+        return render_template('specific-wiki.html', page=subpath, data=data, user = backend.user)
     @app.route("/about")
     def about():
         haley = backend.get_image('ironheart.jpg')
@@ -46,7 +52,26 @@ def make_endpoints(app):
     def login():
         return render_template('login.html')
 
+    @app.route("/log_in", methods=["Get","POST"])
+    def login_post():
+        username = request.form.get("username")
+        password = request.form.get("password")
+        if backend.sign_in(username, password):
+            return render_template('main.html', user = backend.user)
+        else:
+            return render_template('login.html')
+
     @app.route("/signup")
     def signup():
         return render_template('signup.html')
+    
+    @app.route("/sign_up", methods=["POST"])
+    def signup_post():
+        username = request.form.get("username")
+        password = request.form.get("password")
+        if backend.sign_up(username, password):
+            return render_template('main.html', user = backend.user)
+        else:
+            return render_template('signup.html')
+
     # TODO(Project 1): Implement additional routes according to the project requirements.
