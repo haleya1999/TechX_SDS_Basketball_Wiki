@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
+    <h1>All Pages</h1>
 {% for page in pages %}
-  <h1>{{ page.name[5:] }}</h1>
+  <a href="/pages/{{page.name}}">{{ page.name[5:] }}</a>
+  <br>
 {% endfor %}
 </html>
