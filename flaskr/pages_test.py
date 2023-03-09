@@ -20,6 +20,15 @@ def client(app):
 def test_home_page(client):
     resp = client.get("/")
     assert resp.status_code == 200
-    assert b"Hello, World!\n" in resp.data
+    assert b"Basketball Player Wiki" in resp.data
 
 # TODO(Project 1): Write tests for other routes.
+def test_pages(client):
+    resp = client.get("/pages")
+    assert resp.status_code == 200
+    assert b"All Pages" in resp.data
+
+def test_get_page(client):
+    resp = client.get("/pages/docs/kareem-abdul-jabbar.txt")
+    assert resp.status_code == 200
+    assert b"Kareem Abdul-Jabbar" in resp.data
