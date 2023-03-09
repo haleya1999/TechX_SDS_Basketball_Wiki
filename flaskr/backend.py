@@ -8,7 +8,7 @@ import os
 
 class Backend:
 
-    def __init__(self, storage_client=self.storage_client):
+    def __init__(self, storage_client=storage.Client()):
         self.pages = []
         self.myStorageClient = storage_client
         self.page = None
@@ -18,7 +18,7 @@ class Backend:
         self.myStorageClient = self.storage_client
     def get_wiki_page(self, name):
         bucket_name = "wiki-contents"
-        self.page = content_bucket.blob(name)
+        self.page = self.content_bucket.blob(name)
         return self.page
 
     def get_all_page_names(self):
