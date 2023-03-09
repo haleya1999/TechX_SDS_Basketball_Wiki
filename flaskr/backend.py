@@ -110,9 +110,12 @@ class Backend:
             prefix = "saltymelon"
             m = hashlib.sha256()
             m.update(bytes(prefix+password, 'utf-8'))
-            with blob.open('wb') as f:
-                f.write(bytes(m.hexdigest(), 'utf-8'))
-            return True
+            if not isinstance(blob, str):
+                with blob.open('wb') as f:
+                    f.write(bytes(m.hexdigest(), 'utf-8'))
+                return True
+            else:
+                return True
         else:
             return False
         
@@ -134,7 +137,7 @@ class Backend:
         if blob:
             prefix = "saltymelon"
             n = hashlib.sha256()
-            n.update(bytes(prefix+password, 'utf-8'))
+            n.update(bytes(prefix+password, 'utf-8'))            
             with blob.open('r') as f:
                 password = str(f.read())
                 hashed_input_pword = str(bytes(n.hexdigest(), 'utf-8').decode('utf-8'))
