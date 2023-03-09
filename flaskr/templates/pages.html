@@ -1,6 +1,10 @@
-<!DOCTYPE html>
-<html>
-{% for page in pages %}
-  <h1>{{ page.name }}</h1>
-{% endfor %}
-</html>
+{% extends "main.html" %}
+
+{% block page_name %}
+Pages Contained in this Wiki
+{% endblock %}
+
+
+ {% for page in pages %}
+    <h1>{{ page.name }}</h1>
+ {% endfor %}

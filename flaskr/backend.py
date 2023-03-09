@@ -29,7 +29,7 @@ class Backend:
             generation_match_precondition = 0
             blob.upload_from_filename(source_name, if_generation_match=generation_match_precondition)
         else:
-            blob = content_bucket.blob(source_name)
+            blob = content_bucket.blob("docs/" + source_name)
             generation_match_precondition = 0
             blob.upload_from_filename(source_name, if_generation_match=generation_match_precondition)     
         os.remove(source_name)

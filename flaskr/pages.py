@@ -1,6 +1,7 @@
 from flask import render_template, request, redirect
 from flaskr.backend import Backend
 import os
+from werkzeug.utils import secure_filename
 
 def make_endpoints(app):
     backend = Backend()
@@ -26,6 +27,7 @@ def make_endpoints(app):
     @app.route("/upload", methods=['Get', 'POST'])
     def upload_file():
         if request.method == 'POST':
+            allowed_extensions = {"txt", "jpg", "jpeg", "png", "gif"}
         # check if the post request has the file part
             if 'file' not in request.files:
                 return redirect(request.url)
@@ -33,8 +35,9 @@ def make_endpoints(app):
             # If the user does not select a file
             if file.filename == '':
                 return redirect(request.url)
-            else:
-                file.save(os.path.abspath(file.filename))
+            if file and file.filename.rsplit('.', 1)[1].lower() in allowed_extensions:
+                filename = secure_filename(file.filename)
+                file.save(os.path.abspath(filename))
                 backend.upload(file.filename)
                 return redirect(request.url)
         return render_template('uploads.html')
