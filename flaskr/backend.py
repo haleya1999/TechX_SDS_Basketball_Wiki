@@ -27,14 +27,12 @@ class Backend:
         pass
 
     def sign_up(self, username, password):
-        print("1")
         if not self.user_bucket.get_blob(username):
             blob = self.user_bucket.blob(username)
             prefix = "saltymelon"
             m = hashlib.sha256()
             m.update(bytes(prefix+password, 'utf-8'))
             with blob.open('wb') as f:
-                print("3")
                 f.write(bytes(m.hexdigest(), 'utf-8'))
             return True
         else:
