@@ -16,7 +16,7 @@ def make_endpoints(app):
     @app.route("/pages")
     def pages():
         pages = backend.get_all_page_names()
-        return render_template('pages.html', pages=pages), user = backend.user
+        return render_template('pages.html', pages=page, user = backend.user)
     @app.route("/pages/<path:subpath>")
     def get_page(subpath):
         page = backend.get_wiki_page(subpath)

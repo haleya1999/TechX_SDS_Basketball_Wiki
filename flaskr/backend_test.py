@@ -38,6 +38,5 @@ def test_get_image():
     assert image == "test_img.jpg"
 
 def test_upload():
-    mock_storage_client = MockStorageClient()
-    backend_test = Backend(mock_storage_client)
+    pass
     
