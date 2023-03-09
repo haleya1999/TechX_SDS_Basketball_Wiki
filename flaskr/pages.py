@@ -17,7 +17,7 @@ def make_endpoints(app):
     @app.route("/pages")
     def pages():
         pages = backend.get_all_page_names()
-        return render_template('pages.html', pages=page, user = backend.user)
+        return render_template('pages.html', pages=pages, user = backend.user)
     @app.route("/pages/<path:subpath>")
     def get_page(subpath):
         page = backend.get_wiki_page(subpath)
@@ -28,7 +28,7 @@ def make_endpoints(app):
     def about():
         haley = backend.get_image('ironheart.jpg')
         khloe = backend.get_image('HeadshotKhloeWrightFINAL.jpg')
-        maize = backend.get_image('anon.png')
+        maize = backend.get_image('maize_booker_headshot.jpg')
         return render_template('about.html', haley_img = haley, khloe_img = khloe, maize_img = maize, user = backend.user)
 
     @app.route("/upload", methods=['Get', 'POST'])
@@ -74,5 +74,9 @@ def make_endpoints(app):
             return render_template('main.html', user = backend.user)
         else:
             return render_template('signup.html')
+    
+    @app.route("/logout")
+    def logout():
+        return render_template('main.html')
 
     # TODO(Project 1): Implement additional routes according to the project requirements.

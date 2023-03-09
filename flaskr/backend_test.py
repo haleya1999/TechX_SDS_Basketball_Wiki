@@ -34,7 +34,7 @@ def test_get_wiki_page():
 def test_get_image():
     mock_storage_client = MockStorageClient()
     backend_test = Backend(mock_storage_client)
-    image = backend_test.get_image()
+    image = backend_test.get_image("test_img.jpg")
     assert image == "test_img.jpg"
 
 def test_upload():

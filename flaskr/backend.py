@@ -14,7 +14,7 @@ from google.cloud import storage
 import hashlib
 from flask import request, render_template, session, Flask
 import os
-from flask_login import login_user
+# from flask_login import login_user
 
 class Backend:
     """Class that takes care of data through Google Cloud Storage
@@ -37,7 +37,7 @@ class Backend:
         self.content_bucket = self.myStorageClient.bucket('wiki-contents')
         self.user_bucket = self.myStorageClient.bucket('users-passwds')
         self.page = None
-
+        self.user = 0
     
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
@@ -79,7 +79,7 @@ class Backend:
         return self.pages
 
     def upload(self, source_name):
-         """Returns all wiki pages.
+        """Returns all wiki pages.
 
         Retrieves all wiki pages that have been uploaded to the wiki website.
 
@@ -92,6 +92,7 @@ class Backend:
         Raises:
             N/A
         """
+
         photo_extensions = {"jpg", "jpeg", "png", "gif"}
 
         if source_name.rsplit('.', 1)[1].lower() in photo_extensions:
@@ -126,6 +127,7 @@ class Backend:
             if not isinstance(blob, str):
                 with blob.open('wb') as f:
                     f.write(bytes(m.hexdigest(), 'utf-8'))
+                self.user = blob.name
                 return True
             else:
                 return True
@@ -155,7 +157,7 @@ class Backend:
                 password = str(f.read())
                 hashed_input_pword = str(bytes(n.hexdigest(), 'utf-8').decode('utf-8'))
                 if password == hashed_input_pword:
-                    session["_user_id"] = blob.name
+                    self.user = blob.name
                     print("User logged in")
                     # last stopped here - Maize
                     return True
@@ -164,8 +166,11 @@ class Backend:
         else:
             return False
 
+    def logout(self):
+        self.user = 0
+
     def get_image(self, img_name):
-          """Get specified image public url
+        """Get specified image public url
 
         Retrieves public url of image in GCS bucket
 
@@ -180,6 +185,8 @@ class Backend:
             N/A
         """   
         # for a given image name in GCS Bucket, make image public and return public url
+        print(img_name)
         blob = self.content_bucket.blob("pictures/" + img_name)
+        print(blob)
         blob.make_public()
         return blob.public_url

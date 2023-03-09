@@ -37,3 +37,9 @@ def test_sign_up_with_existing_username():
     assert backend_test.sign_up("LeBron James", "password") == False
     assert backend_test.sign_up("Bill Russel", "password") == False
 
+
+def test_login_with_invalid_username():
+    mock_storage_client = MockStorageClient()
+    backend_test = Backend(mock_storage_client)
+    assert backend_test.sign_in("Kyrie Irving", "password") == False
+    assert backend_test.sign_in("Jamal Crawford", "password") == False
