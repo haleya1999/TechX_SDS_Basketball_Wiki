@@ -1,3 +1,14 @@
+"""Includes the Backend class.
+
+The Backend class handles and returns data from Google Cloud Storage. 
+This class is used to fetch html pages, get data from GCS buckets, upload 
+data to GCS buckets, and keep track of users' personal data within GCS buckets/
+
+Typical usage example:
+
+  backend = Backend()
+  all_pages = backend.get_all_page_names()
+"""
 # TODO(Project 1): Implement Backend according to the requirements.
 from google.cloud import storage
 import hashlib
@@ -7,6 +18,19 @@ import os
 
 
 class Backend:
+"""Class that takes care of data through Google Cloud Storage
+
+    Within this class, we store, fetch, upload, and encrypt user data. 
+    The backend communicates with our storage client: Google Cloud
+    Storage. 
+
+    Attributes:
+        pages: a list of all the pages that have been uploaded to the wiki. 
+        myStorageClient: storage client that we read and write data to.
+        content_bucket: storage bucket with all wiki contents (imgs, pages, etc.)
+        user_bucket: storage bucket that stores usernames and passwords
+        page: specific page that is being returned to webpage.
+"""
 
     def __init__(self, storage_client=storage.Client()):
         self.pages = []
