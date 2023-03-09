@@ -41,11 +41,38 @@ class Backend:
 
     
     def get_wiki_page(self, name):
+        """Fetches specific wiki page from content bucket.
+
+        Retrieves wiki page from Google Cloud Storage based on the name provided.
+
+        Args:
+            self: Instance of the class.
+            name: Name of specific wiki page that will be displayed.
+
+        Returns:
+            The wiki file that was uploaded with given name.
+
+        Raises:
+            N/A
+        """
         bucket_name = "wiki-contents"
         self.page = self.content_bucket.blob(name)
         return self.page
 
     def get_all_page_names(self):
+        """Returns all wiki pages.
+
+        Retrieves all wiki pages that have been uploaded to the wiki website.
+
+        Args:
+            self: Instance of the class.
+
+        Returns:
+            A list of all of the page files stored in content bucket.
+
+        Raises:
+            N/A
+        """
         bucket_name = "wiki-contents"
         all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
         for page in all_pages:
