@@ -21,7 +21,7 @@ def make_endpoints(app):
         page = backend.get_wiki_page(subpath)
         with page.open("r") as page:
             data = page.read()
-        return render_template('specific-wiki.html', page=page, data=data)
+        return render_template('specific-wiki.html', page=subpath, data=data)
     @app.route("/about")
     def about():
         haley = backend.get_image('ironheart.jpg')
