@@ -11,6 +11,7 @@ def make_endpoints(app):
         # TODO(Checkpoint Requirement 2 of 3): Change this to use render_template
         # to render main.html on the home page.
         return render_template('main.html')
+
     @app.route("/pages")
     def pages():
         pages = backend.get_all_page_names()
@@ -49,4 +50,14 @@ def make_endpoints(app):
     @app.route("/signup")
     def signup():
         return render_template('signup.html')
+    
+    @app.route("/sign_up", methods=["POST"])
+    def signup_post():
+        username = request.form.get("username")
+        password = request.form.get("password")
+        if backend.sign_up(username, password):
+            return render_template('main.html')
+        else:
+            return render_template('signup.html')
+
     # TODO(Project 1): Implement additional routes according to the project requirements.
