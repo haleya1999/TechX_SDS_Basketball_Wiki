@@ -1,10 +1,9 @@
 # TODO(Project 1): Implement Backend according to the requirements.
 from google.cloud import storage
 import hashlib
-from flask import request, render_template
-
+from flask import request, render_template, session, Flask
 import os
-
+from flask_login import login_user
 
 class Backend:
 
@@ -50,7 +49,6 @@ class Backend:
             m.update(bytes(prefix+password, 'utf-8'))
             with blob.open('wb') as f:
                 f.write(bytes(m.hexdigest(), 'utf-8'))
-            self.user = username
             return True
         else:
             return False
@@ -65,7 +63,8 @@ class Backend:
                 password = str(f.read())
                 hashed_input_pword = str(bytes(n.hexdigest(), 'utf-8').decode('utf-8'))
                 if password == hashed_input_pword:
-                    self.user = username
+                    session["_user_id"] = blob.name
+                    print("User logged in")
                     return True
                 else:
                     return False
