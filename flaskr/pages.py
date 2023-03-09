@@ -1,5 +1,6 @@
-from flask import render_template, request
+from flask import render_template, request, redirect
 from flaskr.backend import Backend
+import os
 
 def make_endpoints(app):
     backend = Backend()
@@ -19,10 +20,26 @@ def make_endpoints(app):
     @app.route("/about")
     def about():
         haley = backend.get_image('ironheart.jpg')
-        #khloe = backend.get_image() -> add image
+        khloe = backend.get_image('HeadshotKhloeWrightFINAL.jpg')
         #maize = backend.get_image() -> add image
-        return render_template('about.html', haley_img = haley)
+        return render_template('about.html', haley_img = haley, khloe_img = khloe)
 
+    @app.route("/upload", methods=['Get', 'POST'])
+    def upload_file():
+        if request.method == 'POST':
+        # check if the post request has the file part
+            if 'file' not in request.files:
+                return redirect(request.url)
+            file = request.files['file']
+            # If the user does not select a file
+            if file.filename == '':
+                return redirect(request.url)
+            else:
+                file.save(os.path.abspath(file.filename))
+                backend.upload(file.filename)
+                return redirect(request.url)
+        return render_template('uploads.html')
+        
     @app.route("/login")
     def login():
         return render_template('login.html')
