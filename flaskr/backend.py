@@ -12,10 +12,10 @@ class Backend:
         self.pages = []
         self.myStorageClient = storage_client
         self.page = None
-        self.storage_client = storage.Client()
-        self.content_bucket = self.storage_client.bucket('wiki-contents')
-        self.user_bucket = self.storage_client.bucket('users-passwds')
-        self.myStorageClient = self.storage_client
+        self.content_bucket = self.myStorageClient.bucket('wiki-contents')
+        self.user_bucket = self.myStorageClient.bucket('users-passwds')
+
+    
     def get_wiki_page(self, name):
         bucket_name = "wiki-contents"
         self.page = self.content_bucket.blob(name)
