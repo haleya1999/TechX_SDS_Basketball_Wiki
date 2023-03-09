@@ -6,6 +6,9 @@ class MockBucket:
         pass
     def blob(self, name):
         return "LBJ"
+    def image(self, name="test_img"):
+        self.name = name
+        return "test_img.jpg"
         
 class MockStorageClient:
     def __init__(self):
@@ -27,3 +30,13 @@ def test_get_wiki_page():
     backend_test = Backend(mock_storage_client)
     page = backend_test.get_wiki_page("blob-name")
     assert page == "LBJ"
+
+def test_get_image():
+    mock_storage_client = MockStorageClient()
+    backend_test = Backend(mock_storage_client)
+    image = backend_test.get_image()
+    assert image == "test_img.jpg"
+
+def test_upload():
+    pass
+    

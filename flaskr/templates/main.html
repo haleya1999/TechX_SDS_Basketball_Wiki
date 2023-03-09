@@ -1,20 +1,6 @@
-<!DOCTYPE html>
-<html>
-   
+{% extends "template.html" %} 
 
-<head>
-    <head>
-        <title> {%block page_name%} Basketball Player Wiki  {%endblock%} </title>
-    </head>
-</head>
-
-
-{% block navigation %}
-<!--If logged in pass user = 'username' to any page that extends main-->
-<div id= "navigation">
-    <a href="/"> Home</a> <a href= "/pages">Pages</a> <a href= "/about">About</a>  |{% if user is defined and user|length %} {{user}} | <a href="/upload"> Upload</a> <a href= "/logout">Logout</a> {% else %} <a href= "/login">Login</a> <a href= "/signup">Signup</a> {% endif %}
-</div>
-{% endblock %}
+{%block page_name %} Basketball Player Wiki  {% endblock %}
 
 {% block content %}
 <body>
@@ -23,5 +9,3 @@
     </div>
 </body>
 {% endblock %}
-
-</html>

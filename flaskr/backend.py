@@ -79,6 +79,19 @@ class Backend:
         return self.pages
 
     def upload(self, source_name):
+         """Returns all wiki pages.
+
+        Retrieves all wiki pages that have been uploaded to the wiki website.
+
+        Args:
+            self: Instance of the class.
+
+        Returns:
+            A list of all of the page files stored in content bucket.
+
+        Raises:
+            N/A
+        """
         photo_extensions = {"jpg", "jpeg", "png", "gif"}
 
         if source_name.rsplit('.', 1)[1].lower() in photo_extensions:
@@ -152,6 +165,20 @@ class Backend:
             return False
 
     def get_image(self, img_name):
+          """Get specified image public url
+
+        Retrieves public url of image in GCS bucket
+
+        Args:
+            self: Instance of the class.
+            
+
+        Returns:
+            A list of all of the page files stored in content bucket.
+
+        Raises:
+            N/A
+        """   
         # for a given image name in GCS Bucket, make image public and return public url
         blob = self.content_bucket.blob("pictures/" + img_name)
         blob.make_public()
