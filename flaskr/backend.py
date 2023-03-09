@@ -16,7 +16,7 @@ class Backend:
 
     def get_all_page_names(self):
         bucket_name = "wiki-contents"
-        all_pages = self.myStorageClient.list_blobs(bucket_name)
+        all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
         for page in all_pages:
             self.pages.append(page)
         return self.pages
@@ -29,7 +29,7 @@ class Backend:
             generation_match_precondition = 0
             blob.upload_from_filename(source_name, if_generation_match=generation_match_precondition)
         else:
-            blob = content_bucket.blob(source_name)
+            blob = content_bucket.blob("docs/" + source_name)
             generation_match_precondition = 0
             blob.upload_from_filename(source_name, if_generation_match=generation_match_precondition)     
         os.remove(source_name)
