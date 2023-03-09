@@ -8,13 +8,14 @@ import os
 
 class Backend:
 
-    def __init__(self, storage_client=self.storage_client):
+    def __init__(self, storage_client=storage.Client()):
         self.pages = []
         self.storage_client = storage.Client()
         self.content_bucket = self.storage_client.bucket('wiki-contents')
         self.user_bucket = self.storage_client.bucket('users-passwds')
-
         self.myStorageClient = self.storage_client
+        self.user = None
+
     def get_wiki_page(self, name):
         pass
 
@@ -46,18 +47,27 @@ class Backend:
             m.update(bytes(prefix+password, 'utf-8'))
             with blob.open('wb') as f:
                 f.write(bytes(m.hexdigest(), 'utf-8'))
+            self.user = username
             return True
         else:
             return False
         
-
     def sign_in(self, username, password):
         blob = self.user_bucket.get_blob(username)
-        with blob.open('r') as f:
-            if f.read() == password:
-                return True
-            else:
-                return False
+        if blob:
+            prefix = "saltymelon"
+            n = hashlib.sha256()
+            n.update(bytes(prefix+password, 'utf-8'))
+            with blob.open('r') as f:
+                password = str(f.read())
+                hashed_input_pword = str(bytes(n.hexdigest(), 'utf-8').decode('utf-8'))
+                if password == hashed_input_pword:
+                    self.user = username
+                    return True
+                else:
+                    return False
+        else:
+            return False
 
     def get_image(self, img_name):
         # for a given image name in GCS Bucket, make image public and return public url

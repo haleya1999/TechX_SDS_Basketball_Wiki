@@ -44,6 +44,15 @@ def make_endpoints(app):
     def login():
         return render_template('login.html')
 
+    @app.route("/log_in", methods=["Get","POST"])
+    def login_post():
+        username = request.form.get("username")
+        password = request.form.get("password")
+        if backend.sign_in(username, password):
+            return render_template('main.html')
+        else:
+            return render_template('login.html')
+
     @app.route("/signup")
     def signup():
         return render_template('signup.html')
