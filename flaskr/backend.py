@@ -18,7 +18,7 @@ import os
 
 
 class Backend:
-"""Class that takes care of data through Google Cloud Storage
+    """Class that takes care of data through Google Cloud Storage
 
     Within this class, we store, fetch, upload, and encrypt user data. 
     The backend communicates with our storage client: Google Cloud
@@ -30,14 +30,13 @@ class Backend:
         content_bucket: storage bucket with all wiki contents (imgs, pages, etc.)
         user_bucket: storage bucket that stores usernames and passwords
         page: specific page that is being returned to webpage.
-"""
+    """
 
     def __init__(self, storage_client=storage.Client()):
         self.pages = []
-        self.storage_client = storage.Client()
-        self.content_bucket = self.storage_client.bucket('wiki-contents')
-        self.user_bucket = self.storage_client.bucket('users-passwds')
-        self.myStorageClient = self.storage_client
+        self.myStorageClient = storage_client
+        self.content_bucket = self.myStorageClient.bucket('wiki-contents')
+        self.user_bucket = self.myStorageClient.bucket('users-passwds')
         self.page = None
 
     
