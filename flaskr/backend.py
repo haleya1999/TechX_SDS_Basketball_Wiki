@@ -92,6 +92,19 @@ class Backend:
         os.remove(source_name)
 
     def sign_up(self, username, password):
+        """Uploads file with hashed password into the user_bucket and uses the username as the key.
+
+        Args:
+            self: Instance of the class.
+            username: string inputted into username field in form on signup.html
+            password: string inputted into password field in form on signup.html
+        Returns:
+            True if username does not already exist in the users-passwds bucket
+            else False
+
+        Raises:
+            N/A
+        """
         if not self.user_bucket.get_blob(username):
             blob = self.user_bucket.blob(username)
             prefix = "saltymelon"
@@ -104,6 +117,19 @@ class Backend:
             return False
         
     def sign_in(self, username, password):
+        """Finds filename that matches with inputted username and evaluates if the inputted password is correct.
+
+        Args:
+            self: Instance of the class.
+            username: string inputted into username field in form on login.html
+            password: string inputted into password field in form on login.html
+        Returns:
+            True if username/password combo is correct
+            else False
+
+        Raises:
+            N/A
+        """        
         blob = self.user_bucket.get_blob(username)
         if blob:
             prefix = "saltymelon"
@@ -115,6 +141,7 @@ class Backend:
                 if password == hashed_input_pword:
                     session["_user_id"] = blob.name
                     print("User logged in")
+                    # last stopped here - Maize
                     return True
                 else:
                     return False
