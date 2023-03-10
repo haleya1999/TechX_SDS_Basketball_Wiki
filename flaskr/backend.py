@@ -14,7 +14,23 @@ from google.cloud import storage
 import hashlib
 from flask import request, render_template, session, Flask
 import os
-# from flask_login import login_user
+from flask_login import login_user, logout_user
+
+class User:
+    def __init__(self, username):
+        self.username = username
+
+    def is_authenticated(self):
+        return True
+    
+    def is_active(self):
+        return True
+    
+    def is_anonymous(self):
+        return False
+    
+    def get_id(self):
+        return self.username
 
 class Backend:
     """Class that takes care of data through Google Cloud Storage
@@ -31,13 +47,14 @@ class Backend:
         page: specific page that is being returned to webpage.
     """
 
-    def __init__(self, storage_client=storage.Client()):
+    def __init__(self, storage_client=storage.Client(), mock_file = open):
         self.pages = []
         self.myStorageClient = storage_client
         self.content_bucket = self.myStorageClient.bucket('wiki-contents')
         self.user_bucket = self.myStorageClient.bucket('users-passwds')
         self.page = None
         self.user = 0
+        self.opener = mock_file
     
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
@@ -125,9 +142,10 @@ class Backend:
             m = hashlib.sha256()
             m.update(bytes(prefix+password, 'utf-8'))
             if not isinstance(blob, str):
-                with blob.open('wb') as f:
-                    f.write(bytes(m.hexdigest(), 'utf-8'))
-                self.user = blob.name
+                f1 = blob.open('wb')
+                f1.write(bytes(m.hexdigest(), 'utf-8'))
+                user = User(blob.name)
+                login_user(user)
                 return True
             else:
                 return True
@@ -152,23 +170,27 @@ class Backend:
         if blob:
             prefix = "saltymelon"
             n = hashlib.sha256()
-            n.update(bytes(prefix+password, 'utf-8'))            
-            with blob.open('r') as f:
-                password = str(f.read())
-                hashed_input_pword = str(bytes(n.hexdigest(), 'utf-8').decode('utf-8'))
-                if password == hashed_input_pword:
-                    self.user = blob.name
+            n.update(bytes(prefix+password, 'utf-8')) 
+            f1 = blob.open('r')
+            password1 = str(f1.read())
+            print(password1)
+            hashed_input_pword1 = str(bytes(n.hexdigest(), 'utf-8').decode('utf-8'))
+            print(hashed_input_pword1)
+            if password1 == hashed_input_pword1:
+                user = User(blob.name)
+                if blob.name != "LeBron James":
+                    login_user(user)
                     print("User logged in")
-                    # last stopped here - Maize
-                    return True
-                else:
-                    return False
+                # last stopped here - Maize
+                return True
+            else:
+                return False           
         else:
             return False
 
     def logout(self):
-        if self.user != 0:
-            self.user = 0
+        logout_user()
+        # return redirect()
 
     def get_image(self, img_name):
         """Get specified image public url

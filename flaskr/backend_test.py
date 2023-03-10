@@ -1,6 +1,14 @@
 from flaskr.backend import Backend
 
 # TODO(Project 1): Write tests for Backend methods.
+
+class MockBlob:
+    def __init__(self, username):
+        self.name = username
+
+    def __enter__(self):
+        return self
+
 class MockBucket:
     def __init__(self):
         pass
@@ -9,6 +17,7 @@ class MockBucket:
     def image(self, name="test_img"):
         self.name = name
         return "test_img.jpg"
+    
         
 class MockStorageClient:
     def __init__(self):

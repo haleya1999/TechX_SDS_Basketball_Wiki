@@ -5,7 +5,23 @@ import pytest
 
 # See https://flask.palletsprojects.com/en/2.2.x/testing/ 
 # for more info on testing
-@pytest.fixture
+class User:
+    def __init__(self, username):
+        self.username = username
+
+    def is_authenticated(self):
+        return True
+    
+    def is_active(self):
+        return True
+    
+    def is_anonymous(self):
+        return False
+    
+    def get_id(self):
+        return self.username
+
+@pytest.fixture     
 def app():
     app = create_app({
         'TESTING': True,

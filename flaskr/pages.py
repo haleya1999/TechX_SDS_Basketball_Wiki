@@ -12,24 +12,24 @@ def make_endpoints(app):
     def home():
         # TODO(Checkpoint Requirement 2 of 3): Change this to use render_template
         # to render main.html on the home page.
-        return render_template('main.html', user = backend.user)
+        return render_template('main.html')
 
     @app.route("/pages")
     def pages():
         pages = backend.get_all_page_names()
-        return render_template('pages.html', pages=pages, user = backend.user)
+        return render_template('pages.html', pages=pages)
     @app.route("/pages/<path:subpath>")
     def get_page(subpath):
         page = backend.get_wiki_page(subpath)
         with page.open("r") as page:
             data = page.read()
-        return render_template('specific-wiki.html', page=subpath, data=data, user = backend.user)
+        return render_template('specific-wiki.html', page=subpath, data=data)
     @app.route("/about")
     def about():
         haley = backend.get_image('ironheart.jpg')
         khloe = backend.get_image('HeadshotKhloeWrightFINAL.jpg')
         maize = backend.get_image('maize_booker_headshot.jpg')
-        return render_template('about.html', haley_img = haley, khloe_img = khloe, maize_img = maize, user = backend.user)
+        return render_template('about.html', haley_img = haley, khloe_img = khloe, maize_img = maize)
 
     @app.route("/upload", methods=['Get', 'POST'])
     def upload_file():
@@ -47,7 +47,7 @@ def make_endpoints(app):
                 file.save(os.path.abspath(filename))
                 backend.upload(file.filename)
                 return redirect(request.url)
-        return render_template('uploads.html', user = backend.user)
+        return render_template('uploads.html')
         
     @app.route("/login")
     def login():
@@ -58,7 +58,7 @@ def make_endpoints(app):
         username = request.form.get("username")
         password = request.form.get("password")
         if backend.sign_in(username, password):
-            return render_template('main.html', user = backend.user)
+            return render_template('main.html')
         else:
             return render_template('login.html')
 
@@ -71,12 +71,13 @@ def make_endpoints(app):
         username = request.form.get("username")
         password = request.form.get("password")
         if backend.sign_up(username, password):
-            return render_template('main.html', user = backend.user)
+            return render_template('main.html')
         else:
             return render_template('signup.html')
     
     @app.route("/logout")
     def logout():
+        backend.logout()        
         return render_template('main.html')
 
     # TODO(Project 1): Implement additional routes according to the project requirements.
