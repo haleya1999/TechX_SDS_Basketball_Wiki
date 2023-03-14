@@ -72,6 +72,9 @@ class Backend:
             N/A
         """
         bucket_name = "wiki-contents"
+        # @4 This throws a 404 error if there's no
+        # page with that name. Not in the rubric,
+        # though, so no ding.
         self.page = self.content_bucket.blob(name)
         return self.page
 
@@ -91,6 +94,8 @@ class Backend:
         """
         bucket_name = "wiki-contents"
         all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
+        # @2 You need to reset self.pages here or
+        # you'll accumulate duplicates. -1
         for page in all_pages:
             self.pages.append(page)
         return self.pages
@@ -109,6 +114,12 @@ class Backend:
         Raises:
             N/A
         """
+
+        # For future reference, I'd recommend abstracting
+        # out the blob.upload_from_filename stuff and
+        # having this method just accept the string or bytes
+        # you want to upload. I'd wager it'd make testing
+        # much easier.
 
         photo_extensions = {"jpg", "jpeg", "png", "gif"}
 
@@ -136,12 +147,36 @@ class Backend:
         Raises:
             N/A
         """
+        # This sort of nested conditional structure is
+        # suboptimal. Hides the logic at a higher level
+        # of indentation and forces the reader to 
+        # mentally track what conditions are true as
+        # they're reading the code. Instead, consider
+        # ```
+        # if self.user_bucket.get_blob(username):
+        #       return False
+        # blob = ...
+        # ```
+
         if not self.user_bucket.get_blob(username):
             blob = self.user_bucket.blob(username)
             prefix = "saltymelon"
+            # `m` is only used in the `if` check; why
+            # define it here?
             m = hashlib.sha256()
             m.update(bytes(prefix+password, 'utf-8'))
+            # Mixing test logic in with your production
+            # logic is bad practice as it makes it
+            # harder for others to reason about what's
+            # happening. Not dinging as this shouldn't
+            # cause any failures in prod (unlike LeBron
+            # James), but definitely remind me to cover
+            # this sort of thing in our meeting if I forget.
             if not isinstance(blob, str):
+                # This should be `with blob.open('wb')`.
+                # It's probably leaking, but that's an
+                # implementation detail of StorageClient
+                # so I can't say for sure
                 f1 = blob.open('wb')
                 f1.write(bytes(m.hexdigest(), 'utf-8'))
                 user = User(blob.name)
@@ -173,11 +208,18 @@ class Backend:
             n.update(bytes(prefix+password, 'utf-8')) 
             f1 = blob.open('r')
             password1 = str(f1.read())
+            # Not great practice to print peoples' plain-text
+            # passwords in prod. Logs are usually saved
+            # somewhere for at least awhile.
             print(password1)
             hashed_input_pword1 = str(bytes(n.hexdigest(), 'utf-8').decode('utf-8'))
             print(hashed_input_pword1)
             if password1 == hashed_input_pword1:
                 user = User(blob.name)
+                # @3 I recognize this is probably for
+                # testing, but this shouldn't be left
+                # in for production code. Now LeBron
+                # James can never use your site :( -1
                 if blob.name != "LeBron James":
                     login_user(user)
                     print("User logged in")

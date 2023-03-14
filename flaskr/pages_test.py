@@ -3,6 +3,8 @@ import os
 
 import pytest
 
+# Why does this also define User? Pull this out of here
+# and backend and consolidate into a user.py file. No ding.
 # See https://flask.palletsprojects.com/en/2.2.x/testing/ 
 # for more info on testing
 class User:
@@ -32,6 +34,7 @@ def app():
 def client(app):
     return app.test_client()
 
+# @5
 # TODO(Checkpoint (groups of 4 only) Requirement 4): Change test to
 # match the changes made in the other Checkpoint Requirements.
 def test_home_page(client):
@@ -49,8 +52,11 @@ def test_upload_page(client):
     get = client.get("/upload")
     assert get.status_code == 200
     assert b"Upload a Doc to the Wiki" in get.data
+    # These should ideally be in different tests. No ding.
     post = client.post("/upload")
     assert post.status_code == 302
+
+# @5
 # TODO(Project 1): Write tests for other routes.
 def test_pages(client):
     resp = client.get("/pages")

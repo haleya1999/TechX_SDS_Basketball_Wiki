@@ -34,18 +34,24 @@ def test_get_all_pages():
     backend_test = Backend(mock_storage_client)
     all_pages = backend_test.get_all_page_names()
     assert all_pages == ["LeBron James", "Stephen Curry", "Bill Russel", "Larry Bird"]
+
+# @5
 def test_get_wiki_page():
     mock_storage_client = MockStorageClient()
     backend_test = Backend(mock_storage_client)
     page = backend_test.get_wiki_page("blob-name")
     assert page == "LBJ"
+# -1: Missing test_get_wiki_page_failure
 
 def test_get_image():
     mock_storage_client = MockStorageClient()
     backend_test = Backend(mock_storage_client)
     image = backend_test.get_image("test_img.jpg")
     assert image == "test_img.jpg"
+# -1: Missing test_get_image_failure
 
 def test_upload():
     pass
-    
+# -2: Missing test_upload
+
+

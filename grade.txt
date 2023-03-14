@@ -1,0 +1,90 @@
+===Requirements===
+Wiki pages & About (10)
+- Wiki pages 6/7
+- About images 3/3
+
+Backend (10)
+- declaration 1/1
+- init 1/1
+- get_wiki_page 1/1
+- get_all_page_names 1/1
+- upload 1/1
+- sign_up 2/2
+- sign_in 2/2
+- get_image 1/1
+Routes
+- / 2/2
+- /pages 1/2 (@2)
+- /pages/* 3/3
+- /about 3/3
+- /signup 4/4
+- /login 3/5
+  - Working user_loader 0/1 (@1)
+  - Working login GET route 1/1
+  - Working login POST route 2/3 (@3)
+- /logout 1/1
+- /upload 5/5
+Nav Bar (5)
+- Logged out button state 1.66/1.66
+- Loggin in button state 1.66/1.66
+- Logged in username 1.66/1.66
+Unit tests (35)
+- Acceptable bucket mock 3/3
+- test_get_wiki_page_success 1/1
+- test_get_wiki_page_failure 0/1
+- test_get_all_pages 1/1
+- test_upload_success 0/1
+- test_upload_failure 0/1
+- test_get_image_success 1/1
+- test_get_image_failure 0/1
+- test_sign_up_success 1/1
+- test_sign_up_failure 1/1
+- test_sign_in_success 1/1
+- test_sign_in_no_user 1/1
+- test_sign_in_bad_password 1/1
+
+- test_login_page (get) 0/1
+- test_login_failed 0/2
+- test_login_successful 0/2
+- test_logout_page (get) 0/1
+- test_signup_page (get) 0/1
+- test_signup_failed 0/2
+- test_home_page 1/1
+- test_about_page 1/1
+- test_all_pages 1/1
+- test_get_page 1/1
+- test_get_image 0/0 (@6)
+- test_upload_page 1/1
+- test_unable_to_upload 1/1
+- test_upload_failed 0/2
+- test_upload_successful 0/2
+
+Comments (5)
+- Doc strings all look fine from brief skim. Some comments on logic. Some comments left in that probably shouldn't have been (Checkpoint TODO markers, notes to self, etc.). Combined ding for that and formatting issues (@5) 4/5
+
+(newlines are bad)
+
+===Penalties===
+@1 Going to any route after logging in logs you out, or at least switches you back to the logged out view. You need to return a user from the user_loader function for it to persist.
+
+@2 Each time you reload the page, the list of links is duplicated. (-1)
+
+@3 Test logic mixed with prod logic in a way that causes a bug. (-1)
+
+They don't actually care about this in the rubric but you should have guards on /upload and /logout that allow them to only be called if the user is logged in. (-0, as mentioned, not in rubric. Leaving this here for learning purposes.)
+
+@4 Going to /pages/this_page_dne throws a 404. Could handle that more gracefully. (-0, the rubric doesn't specify how to handle error cases, but there is a unit test requirement for it, so there'll be a ding there.)
+
+@5 Misc. formatting/comment issues (-1)
+
+The structure of this project is a little all over the place. user_test tests logging in, signing up, etc. all with its own mock implementations.
+
+@6 This was in the rubric but not the requirements so I'm not counting it against your score.
+
+===Grade===
+
+Overall raw grade: 67/89 -> 68/90
+
+Turned in late. (-20%)
+
+Overall final grade: 54.4/90

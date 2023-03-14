@@ -38,6 +38,7 @@ def make_endpoints(app):
         # check if the post request has the file part
             if 'file' not in request.files:
                 return redirect(request.url)
+            
             file = request.files['file']
             # If the user does not select a file
             if file.filename == '':
