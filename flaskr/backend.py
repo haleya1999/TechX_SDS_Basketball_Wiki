@@ -9,6 +9,87 @@ Typical usage example:
   backend = Backend()
   all_pages = backend.get_all_page_names()
 """
+
+# user
+# - usernames
+# - passwords (+- hashing/salting)
+# file
+# - wiki pages
+# - - name
+# - - content
+# - images
+# - - name
+# - - content
+
+data = {
+    'users': {
+        '<username>': '<password>'
+    }
+    'files': {
+        'pages': {
+            '<filename>': '<content>'
+        },
+        'images': {
+            '<filename>': '<content>
+        }
+    }
+}
+
+
+class DataSource:
+    def __init__():
+        pass
+    
+    def get_user(username):
+        pass
+    
+    def get_page(pagename):
+        pass
+    
+    def get_pages():
+        pass
+    
+    def add_page():
+        pass
+    
+class BucketDataSource:
+    def __init__():
+        self.content_bucket = self.myStorageClient.bucket('wiki-contents')
+        self.user_bucket = self.myStorageClient.bucket('users-passwds')
+    
+    def get_page(pagename):
+        return self.content_bucket.blob(name)
+    
+    def get_user(username):
+        return self.user_bucket.get_blob(username)
+
+class MockDataSource:
+    def __init__(data):
+        self.data = data
+    
+    def get_page(pagename):
+        return self.data['files']['pages'][pagename]
+
+    def get_user(username):
+        return self.data['users'][username]
+
+
+def test_get_wiki_page():
+    mock_data_source = MockDataSource({
+        'files': {
+            'test1': 'LBJ',
+        }
+    })
+    backend_test = Backend(mock_data_source)
+    page = backend_test.get_wiki_page("test1")
+    assert page == "LBJ"
+
+
+prodBackend = Backend(BucketDataSource())
+
+
+
+
 # TODO(Project 1): Implement Backend according to the requirements.
 from google.cloud import storage
 import hashlib
@@ -75,8 +156,9 @@ class Backend:
         # @4 This throws a 404 error if there's no
         # page with that name. Not in the rubric,
         # though, so no ding.
-        self.page = self.content_bucket.blob(name)
-        return self.page
+        return self.data_source.get_page(name)
+        # self.page = self.content_bucket.blob(name)
+        # return self.page
 
     def get_all_page_names(self):
         """Returns all wiki pages.
@@ -201,6 +283,8 @@ class Backend:
         Raises:
             N/A
         """        
+        # user = self.data_source.get_user(username)
+
         blob = self.user_bucket.get_blob(username)
         if blob:
             prefix = "saltymelon"
