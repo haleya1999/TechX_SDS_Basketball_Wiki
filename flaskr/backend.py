@@ -43,6 +43,9 @@ class DataSource:
     def get_user(username):
         pass
     
+    def set_user(username, password):
+        pass
+
     def get_page(pagename):
         pass
     
@@ -62,6 +65,9 @@ class BucketDataSource:
     
     def get_user(username):
         return self.user_bucket.get_blob(username)
+    
+    def set_user(username):
+        return 
 
 class MockDataSource:
     def __init__(data):
@@ -72,9 +78,12 @@ class MockDataSource:
 
     def get_user(username):
         return self.data['users'][username]
+    
+    def set_user(username, password):
+        self.data['users'][username] = password
 
 
-def test_get_wiki_page():
+def test_get_wiki_page_success():
     mock_data_source = MockDataSource({
         'files': {
             'test1': 'LBJ',
@@ -83,6 +92,82 @@ def test_get_wiki_page():
     backend_test = Backend(mock_data_source)
     page = backend_test.get_wiki_page("test1")
     assert page == "LBJ"
+
+
+def test_login():
+    mock_data_source = MockDataSource({
+        'users': {
+            'success': 'valid',
+            'failure_1': 'pompom',
+        }
+    })
+    backend_test = Backend(mock_data_source)
+
+    # Successful
+    assert backend_test.sign_in("success", "valid") == True
+
+    # Wrong username/password
+    assert backend_test.sign_in('failure1', 'bad_password') == False
+
+    # Missing username/password
+    assert backend_test.sign_in('', '') == False
+
+    # User doesn't exist
+    assert backend_test.sign_in('failure_2', 'password') == False
+
+
+def test_sign_in():
+    mock_data_source = MockDataSource({})
+
+    backend_test = Backend(mock_data_source)
+
+    # username exists & pass1 matches
+    assert sign_in(user1, pass1) == True
+
+    # username DNE
+    assert sign_in(user1, pass1) == False
+
+    # username exists & pass1 doesn't match expected
+    assert sign_in(user1, pass1) == False
+
+def sign_in(self, username, password):
+    if self.data_source.get_user(username) == False:
+        return False
+    if self.data_source.get_password(username) != hashed(password):
+        return False
+    return True
+
+def hashed(plain_password):
+    return mdb64.hash(plain_password)
+
+
+
+# def sign_in(username: str, password: str) -> bool:
+#     pass
+
+
+def signup(self, username, password):
+    if len(username) == 0 or len(password) == 0:
+        return False
+    
+    if self.data_source.get_user(username):
+        return False
+    
+    if is_bad_username(username):
+        return False
+
+    self.data_source.set_user(username, password)
+    return True
+
+
+def is_bad_username(username):
+    if len(username) < 5 || len(username) > 12:
+        return True
+    # if username.startswith()
+
+
+
+
 
 
 prodBackend = Backend(BucketDataSource())
