@@ -16,21 +16,24 @@ from flask import request, render_template, session, Flask
 import os
 from flask_login import login_user, logout_user
 
+
 class User:
+
     def __init__(self, username):
         self.username = username
 
     def is_authenticated(self):
         return True
-    
+
     def is_active(self):
         return True
-    
+
     def is_anonymous(self):
         return False
-    
+
     def get_id(self):
         return self.username
+
 
 class Backend:
     """Class that takes care of data through Google Cloud Storage
@@ -47,7 +50,7 @@ class Backend:
         page: specific page that is being returned to webpage.
     """
 
-    def __init__(self, storage_client=storage.Client(), mock_file = open):
+    def __init__(self, storage_client=storage.Client(), mock_file=open):
         self.pages = []
         self.myStorageClient = storage_client
         self.content_bucket = self.myStorageClient.bucket('wiki-contents')
@@ -55,7 +58,7 @@ class Backend:
         self.page = None
         self.user = 0
         self.opener = mock_file
-    
+
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
 
@@ -115,11 +118,13 @@ class Backend:
         if source_name.rsplit('.', 1)[1].lower() in photo_extensions:
             blob = self.content_bucket.blob("pictures/" + source_name)
             generation_match_precondition = 0
-            blob.upload_from_filename(source_name, if_generation_match=generation_match_precondition)
+            blob.upload_from_filename(
+                source_name, if_generation_match=generation_match_precondition)
         else:
             blob = self.content_bucket.blob("docs/" + source_name)
             generation_match_precondition = 0
-            blob.upload_from_filename(source_name, if_generation_match=generation_match_precondition)     
+            blob.upload_from_filename(
+                source_name, if_generation_match=generation_match_precondition)
         os.remove(source_name)
 
     def sign_up(self, username, password):
@@ -140,7 +145,7 @@ class Backend:
             blob = self.user_bucket.blob(username)
             prefix = "saltymelon"
             m = hashlib.sha256()
-            m.update(bytes(prefix+password, 'utf-8'))
+            m.update(bytes(prefix + password, 'utf-8'))
             if not isinstance(blob, str):
                 f1 = blob.open('wb')
                 f1.write(bytes(m.hexdigest(), 'utf-8'))
@@ -151,7 +156,7 @@ class Backend:
                 return True
         else:
             return False
-        
+
     def sign_in(self, username, password):
         """Finds filename that matches with inputted username and evaluates if the inputted password is correct.
 
@@ -165,16 +170,17 @@ class Backend:
 
         Raises:
             N/A
-        """        
+        """
         blob = self.user_bucket.get_blob(username)
         if blob:
             prefix = "saltymelon"
             n = hashlib.sha256()
-            n.update(bytes(prefix+password, 'utf-8')) 
+            n.update(bytes(prefix + password, 'utf-8'))
             f1 = blob.open('r')
             password1 = str(f1.read())
             print(password1)
-            hashed_input_pword1 = str(bytes(n.hexdigest(), 'utf-8').decode('utf-8'))
+            hashed_input_pword1 = str(
+                bytes(n.hexdigest(), 'utf-8').decode('utf-8'))
             print(hashed_input_pword1)
             if password1 == hashed_input_pword1:
                 user = User(blob.name)
@@ -184,7 +190,7 @@ class Backend:
                 # last stopped here - Maize
                 return True
             else:
-                return False           
+                return False
         else:
             return False
 
@@ -206,7 +212,7 @@ class Backend:
 
         Raises:
             N/A
-        """   
+        """
         # for a given image name in GCS Bucket, make image public and return public url
         print(img_name)
         blob = self.content_bucket.blob("pictures/" + img_name)
