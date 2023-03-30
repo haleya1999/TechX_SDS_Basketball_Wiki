@@ -56,12 +56,15 @@ def test_get_wiki_page():
 
 def test_get_image():
     pass
+
+
 """
     mock_storage_client = MockStorageClient()
     backend_test = Backend(mock_storage_client)
     image = "test_img.jpg"
     assert backend_test.get_image(image) == "test_img.jpg"
 """
+
 
 def test_upload():
     pass
