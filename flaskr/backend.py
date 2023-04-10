@@ -15,6 +15,7 @@ import hashlib
 from flask import request, render_template, session, Flask
 import os
 from flask_login import login_user, logout_user
+from datetime import datetime
 
 
 class User:
@@ -56,7 +57,7 @@ class Backend:
         self.content_bucket = self.myStorageClient.bucket('wiki-contents')
         self.user_bucket = self.myStorageClient.bucket('users-passwds')
         self.page = None
-        self.user = 0
+        self.user = User("not-logged-in")
         self.opener = mock_file
 
     def get_wiki_page(self, name):
@@ -125,7 +126,34 @@ class Backend:
             generation_match_precondition = 0
             blob.upload_from_filename(
                 source_name, if_generation_match=generation_match_precondition)
+            self.create_metadata(source_name)
         os.remove(source_name)
+                       
+
+    def create_metadata(self, source_name):
+        source = source_name.rsplit('.', 1)
+        metadata_file = source[0] + "-metadata"
+        final_file_name = metadata_file + ".txt"
+        print(final_file_name)
+        with open(final_file_name, "w") as f:
+           # author, time, visits,
+           # number of visits
+           # time it was posted
+           visits = 0
+           posted_at = datetime.now()
+           author = self.user.username
+           f.write(f"Author: {author}\n")
+           f.write(f"Posted at: {posted_at}\n")
+           f.write(f"Number of Vists: {visits}\n")
+        blob = self.content_bucket.blob("metadata/" + final_file_name)
+        generation_match_precondition = 0
+        blob.upload_from_filename(final_file_name, if_generation_match=generation_match_precondition)
+
+
+           
+        
+
+
 
     def sign_up(self, username, password):
         """Uploads file with hashed password into the user_bucket and uses the username as the key.
@@ -149,8 +177,8 @@ class Backend:
             if not isinstance(blob, str):
                 f1 = blob.open('wb')
                 f1.write(bytes(m.hexdigest(), 'utf-8'))
-                user = User(blob.name)
-                login_user(user)
+                self.user = User(blob.name)
+                login_user(self.user)
                 return True
             else:
                 return True
@@ -183,9 +211,9 @@ class Backend:
                 bytes(n.hexdigest(), 'utf-8').decode('utf-8'))
             print(hashed_input_pword1)
             if password1 == hashed_input_pword1:
-                user = User(blob.name)
+                self.user = User(blob.name)
                 if blob.name != "LeBron James":
-                    login_user(user)
+                    login_user(self.user)
                     print("User logged in")
                 # last stopped here - Maize
                 return True
