@@ -25,6 +25,17 @@ def make_endpoints(app):
         with page.open("r") as page:
             data = page.read()
         return render_template('specific-wiki.html', page=subpath, data=data)
+    
+    @app.route("/pages/<path:subpath>/edit", methods=['Get', 'POST'])
+    def edits(subpath):
+        if request.method == "POST":
+            form_data = request.form['editor']
+            #change txt file
+            #maybe change metadata
+            pass
+        #get text from page
+        data = ""
+        return render_template('editor.html', page=subpath, data=data)
 
     @app.route("/about")
     def about():
