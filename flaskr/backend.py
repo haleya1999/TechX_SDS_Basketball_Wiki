@@ -134,26 +134,18 @@ class Backend:
         source = source_name.rsplit('.', 1)
         metadata_file = source[0] + "-metadata"
         final_file_name = metadata_file + ".txt"
-        print(final_file_name)
-        with open(final_file_name, "w") as f:
-           # author, time, visits,
-           # number of visits
-           # time it was posted
-           visits = 0
-           posted_at = datetime.now()
-           author = self.user.username
-           f.write(f"Author: {author}\n")
-           f.write(f"Posted at: {posted_at}\n")
-           f.write(f"Number of Vists: {visits}\n")
+        # print(final_file_name)
+        f = self.opener(final_file_name, "w")
+        visits = 0
+        posted_at = datetime.now()
+        author = self.user.username
+        f.write(f"Author: {author}\n")
+        f.write(f"Posted at: {posted_at}\n")
+        f.write(f"Number of Vists: {visits}\n")
+        f.close()
         blob = self.content_bucket.blob("metadata/" + final_file_name)
         generation_match_precondition = 0
         blob.upload_from_filename(final_file_name, if_generation_match=generation_match_precondition)
-
-
-           
-        
-
-
 
     def sign_up(self, username, password):
         """Uploads file with hashed password into the user_bucket and uses the username as the key.

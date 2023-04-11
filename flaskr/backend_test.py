@@ -26,7 +26,12 @@ class MockBucket:
 
 
 class MockStorageClient:
-
+    """
+        mock_storage_client = MockStorageClient()
+        backend_test = Backend(mock_storage_client)
+        image = "test_img.jpg"
+        assert backend_test.get_image(image) == "test_img.jpg"
+    """
     def __init__(self):
         pass
 
@@ -36,6 +41,21 @@ class MockStorageClient:
     def bucket(self, bucket_name):
         mock_bucket = MockBucket()
         return MockBucket()
+
+class MockFile:
+    def __init__(self):
+        self.content = ""
+        self.filename = ""
+    
+    def set_filename(self, name):
+        self.filename = name
+
+    def write(self, content):
+        self.content = content
+
+    def close(self):
+        return self
+    
 
 
 def test_get_all_pages():
@@ -57,14 +77,20 @@ def test_get_wiki_page():
 def test_get_image():
     pass
 
-
-"""
-    mock_storage_client = MockStorageClient()
-    backend_test = Backend(mock_storage_client)
-    image = "test_img.jpg"
-    assert backend_test.get_image(image) == "test_img.jpg"
-"""
-
-
 def test_upload():
     pass
+
+def test_create_metadata():
+    test_file = MockFile()
+    def mock_open(filename, _):
+        test_file.set_filename(test_file)
+        test_file.write("Author: Khloe W.")
+        return test_file
+    # original_open = open
+    # open = mock_open
+    backend = Backend(mock_file=mock_open)
+    backend.create_metadata("test_file")
+    # open = original_open
+    assert test_file.filename == "test_file-metadata.txt"
+    assert test_file.content == "Author: Khloe W."
+
