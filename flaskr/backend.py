@@ -16,6 +16,7 @@ from flask import request, render_template, session, Flask
 import os
 from flask_login import login_user, logout_user
 from datetime import datetime
+from collections import defaultdict
 
 
 class User:
@@ -59,6 +60,12 @@ class Backend:
         self.page = None
         self.user = User("not-logged-in")
         self.opener = mock_file
+        self.pages_by_name = defaultdict(list)
+        self.pages_by_category = {
+            'teams': {},
+            'years': {1950:{},1960:{},1970:{},1980:{},1990:{},2000:{},2010:{},2020:{}},
+            'positions': {'center':[], 'power forward':[], 'small forward':[], 'point guard':[], 'shooting guard':[]}
+        }
 
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
@@ -247,3 +254,14 @@ class Backend:
         print(blob)
         blob.make_public()
         return blob.public_url
+
+    def sort_by_name(self):
+        bucket_name = "wiki-contents"
+        all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
+        for page in all_pages:
+            title = page.name
+            title = title[5:-4]
+            names = title.rsplit('-')
+            for name in names:
+                    if name != '':
+                        self.pages_by_name[name].append(page.name)
