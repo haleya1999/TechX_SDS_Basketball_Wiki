@@ -59,6 +59,7 @@ class Backend:
         self.page = None
         self.user = User("not-logged-in")
         self.opener = mock_file
+        self.metadata_page = None
 
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
@@ -75,8 +76,9 @@ class Backend:
         Raises:
             N/A
         """
-        bucket_name = "wiki-contents"
         self.page = self.content_bucket.blob(name)
+        metadata_file = f"metadata-{name[5:]}"
+        self.update_metadata(metadata_file)
         return self.page
 
     def get_all_page_names(self):
@@ -149,12 +151,28 @@ class Backend:
         generation_match_precondition = 0
         blob.upload_from_filename(final_file_name, if_generation_match=generation_match_precondition)
 
+    def update_metadata(self, source_name):
+        print(source_name)
+        print("gets to metadata")
+        self.metadata_page = self.content_bucket.blob(f"metadata/{source_name}")
+        modified_data = None
+        print(self.metadata_page)
+        with self.metadata_page.open("r") as metadata_page:
+            data = metadata_page.readlines()
+            print(data)
+            visits = data[2]
+            amt_visits = int(visits[-2])
+            amt_visits += 1
+            print(amt_visits)
+            data[2] = f"Number of Vists: {amt_visits}\n"
+            modified_data = data
+        with self.metadata_page.open("w") as metadata_page:
+            metadata_page.writelines(modified_data)
+        blob = self.metadata_page
+        blob.upload_from_filename(source_name)
 
-           
+
         
-
-
-
     def sign_up(self, username, password):
         """Uploads file with hashed password into the user_bucket and uses the username as the key.
 
@@ -247,3 +265,6 @@ class Backend:
         print(blob)
         blob.make_public()
         return blob.public_url
+
+test = Backend()
+test.update_metadata("test1-metadata.txt")
