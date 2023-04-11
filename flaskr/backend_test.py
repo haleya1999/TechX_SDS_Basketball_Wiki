@@ -88,9 +88,9 @@ def test_create_metadata():
         return test_file
     # original_open = open
     # open = mock_open
-    backend = Backend(mock_file=mock_open)
+    mock_storage_client = MockStorageClient()
+    backend = Backend(storage_client=mock_storage_client, mock_file=mock_open)
     backend.create_metadata("test_file")
     # open = original_open
     assert test_file.filename == "test_file-metadata.txt"
     assert test_file.content == "Author: Khloe W."
-
