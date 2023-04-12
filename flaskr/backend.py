@@ -81,6 +81,8 @@ class Backend:
                 'shooting guard': []
             }
         }
+        self.full_sort_by_name()
+        self.search_results = []
 
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
