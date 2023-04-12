@@ -249,13 +249,11 @@ class Backend:
         blob.make_public()
         return blob.public_url
     def add_to_dict(self, filename, position, draft_year, teams):
-        print(filename, position, draft_year, teams)
         self.all_players[filename] = {
             'position': position,
             'draft_year': draft_year,
             'teams': teams
         }
-        print(self.all_players)
         return self
 
 
