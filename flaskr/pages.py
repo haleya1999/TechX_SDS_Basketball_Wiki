@@ -53,9 +53,9 @@ def make_endpoints(app):
                 file.save(os.path.abspath(filename))
                 backend.upload(file.filename)
                 #saving data for dictionary
-                position = request.form.get("position")
-                draft_year = request.form.get("years")
-                teams = request.form.get("source")
+                position = request.form['position']
+                draft_year = request.form['years']
+                teams = request.form.getlist('source')
                 backend.add_to_dict(filename, position, draft_year, teams)
                 return redirect(request.url)
                 
