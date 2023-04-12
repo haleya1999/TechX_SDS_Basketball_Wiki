@@ -52,7 +52,13 @@ def make_endpoints(app):
                 filename = secure_filename(file.filename)
                 file.save(os.path.abspath(filename))
                 backend.upload(file.filename)
+                #saving data for dictionary
+                position = request.form.get("position")
+                draft_year = request.form.get("years")
+                teams = request.form.get("source")
+                backend.add_to_dict(filename, position, draft_year, teams)
                 return redirect(request.url)
+                
         return render_template('uploads.html')
 
     @app.route("/login")

@@ -59,6 +59,7 @@ class Backend:
         self.page = None
         self.user = User("not-logged-in")
         self.opener = mock_file
+        self.all_players = {}
 
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
@@ -247,3 +248,13 @@ class Backend:
         print(blob)
         blob.make_public()
         return blob.public_url
+    def add_to_dict(self, filename, position, draft_year, teams):
+        self.all_players[filename] = {
+            'position': position,
+            'draft_year': draft_year,
+            'teams': teams
+        }
+        return self
+
+backend = Backend()
+print(backend.all_players)
