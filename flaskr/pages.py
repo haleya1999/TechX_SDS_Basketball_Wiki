@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 
 def make_endpoints(app):
     backend = Backend()
+    backend.full_sort_by_name()
     # Flask uses the "app.route" decorator to call methods when users
     # go to a specific route on the project's website.
     @app.route("/")
@@ -50,6 +51,7 @@ def make_endpoints(app):
             if file and file.filename.rsplit(
                     '.', 1)[1].lower() in allowed_extensions:
                 filename = secure_filename(file.filename)
+                backend.single_sort_by_name(filename)
                 file.save(os.path.abspath(filename))
                 backend.upload(file.filename)
                 return redirect(request.url)

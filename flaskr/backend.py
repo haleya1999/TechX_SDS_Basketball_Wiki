@@ -63,8 +63,23 @@ class Backend:
         self.pages_by_name = defaultdict(list)
         self.pages_by_category = {
             'teams': {},
-            'years': {1950:{},1960:{},1970:{},1980:{},1990:{},2000:{},2010:{},2020:{}},
-            'positions': {'center':[], 'power forward':[], 'small forward':[], 'point guard':[], 'shooting guard':[]}
+            'years': {
+                1950: {},
+                1960: {},
+                1970: {},
+                1980: {},
+                1990: {},
+                2000: {},
+                2010: {},
+                2020: {}
+            },
+            'positions': {
+                'center': [],
+                'power forward': [],
+                'small forward': [],
+                'point guard': [],
+                'shooting guard': []
+            }
         }
 
     def get_wiki_page(self, name):
@@ -82,7 +97,6 @@ class Backend:
         Raises:
             N/A
         """
-        bucket_name = "wiki-contents"
         self.page = self.content_bucket.blob(name)
         return self.page
 
@@ -135,7 +149,6 @@ class Backend:
                 source_name, if_generation_match=generation_match_precondition)
             self.create_metadata(source_name)
         os.remove(source_name)
-                       
 
     def create_metadata(self, source_name):
         source = source_name.rsplit('.', 1)
@@ -143,24 +156,19 @@ class Backend:
         final_file_name = metadata_file + ".txt"
         print(final_file_name)
         with open(final_file_name, "w") as f:
-           # author, time, visits,
-           # number of visits
-           # time it was posted
-           visits = 0
-           posted_at = datetime.now()
-           author = self.user.username
-           f.write(f"Author: {author}\n")
-           f.write(f"Posted at: {posted_at}\n")
-           f.write(f"Number of Vists: {visits}\n")
+            # author, time, visits,
+            # number of visits
+            # time it was posted
+            visits = 0
+            posted_at = datetime.now()
+            author = self.user.username
+            f.write(f"Author: {author}\n")
+            f.write(f"Posted at: {posted_at}\n")
+            f.write(f"Number of Vists: {visits}\n")
         blob = self.content_bucket.blob("metadata/" + final_file_name)
         generation_match_precondition = 0
-        blob.upload_from_filename(final_file_name, if_generation_match=generation_match_precondition)
-
-
-           
-        
-
-
+        blob.upload_from_filename(
+            final_file_name, if_generation_match=generation_match_precondition)
 
     def sign_up(self, username, password):
         """Uploads file with hashed password into the user_bucket and uses the username as the key.
@@ -255,13 +263,44 @@ class Backend:
         blob.make_public()
         return blob.public_url
 
-    def sort_by_name(self):
+    def full_sort_by_name(self):
+        """fill a dictionary with names and a list of pages from GCS corresponding to each name
+
+        Args:
+            self: Instance of the class.
+            
+
+        Returns:
+            N/A
+        Raises:
+            N/A
+        """
         bucket_name = "wiki-contents"
         all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
         for page in all_pages:
-            title = page.name
-            title = title[5:-4]
-            names = title.rsplit('-')
+            title = page.name[5:-4]
+            names = title.split('-')
             for name in names:
-                    if name != '':
-                        self.pages_by_name[name].append(page.name)
+                if name != '':
+                    self.pages_by_name[name].append(page.name)
+
+    def single_sort_by_name(self, filename):
+        """update name dictionary with info from uploaded files
+
+        Args:
+            self: Instance of the class.
+            
+
+        Returns:
+            N/A
+        Raises:
+            N/A
+        """
+        title = filename[:-4]
+        names = title.split('-')
+        for name in names:
+            if name != '':
+                self.pages_by_name[name].append("docs/" + filename)
+
+    def update_categories(self, teams, position, start_year, end_year):
+        decade = start_year / 10

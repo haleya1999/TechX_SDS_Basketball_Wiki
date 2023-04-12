@@ -68,3 +68,13 @@ def test_get_image():
 
 def test_upload():
     pass
+
+
+def test_sort_by_name():
+    mock_storage_client = MockStorageClient()
+    backend_test = Backend(mock_storage_client)
+    backend_test.single_sort_by_name("file-name.txt")
+    assert backend_test.pages_by_name == {
+        'file': ['docs/file-name.txt'],
+        'name': ['docs/file-name.txt']
+    }
