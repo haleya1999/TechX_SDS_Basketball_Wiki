@@ -82,7 +82,7 @@ class Backend:
             }
         }
         self.full_sort_by_name()
-        self.search_results = []
+        self.searched_pages = []
 
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
@@ -116,11 +116,40 @@ class Backend:
         Raises:
             N/A
         """
+        self.pages = []
         bucket_name = "wiki-contents"
         all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
         for page in all_pages:
             self.pages.append(page)
         return self.pages
+    
+    def get_searched_pages(self, text):
+        self.searched_pages = []
+        bucket_name = "wiki-contents"
+        all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
+        
+        processed_text = text.lower()
+        processed_text.replace("-", " ")
+        text_list = processed_text.split()
+        num_words = len(text_list)
+        search_results_counter = {}
+        search_results = []        
+        for name in text_list:
+            if name in self.pages_by_name:
+                if self.pages_by_name[name][0] in search_results_counter:
+                    search_results_counter[self.pages_by_name[name][0]] += 1
+                else:
+                    search_results_counter[self.pages_by_name[name][0]] = 1
+
+        for page in search_results_counter:
+            if search_results_counter[page] >= num_words:
+                search_results.append(page)
+        
+        for page in all_pages:
+            if page.name in search_results:
+                self.searched_pages.append(page)
+        
+        return self.searched_pages    
 
     def upload(self, source_name):
         """Returns all wiki pages.

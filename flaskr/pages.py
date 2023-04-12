@@ -15,10 +15,20 @@ def make_endpoints(app):
         # to render main.html on the home page.
         return render_template('main.html')
 
+    @app.route('/', methods=['POST'])
+    def search_inputted_text_on_home():
+        text = request.form['text']
+        return render_template('pages.html', pages = backend.get_searched_pages(text))
+        
     @app.route("/pages")
     def pages():
         pages = backend.get_all_page_names()
         return render_template('pages.html', pages=pages)
+    
+    @app.route('/pages', methods=['POST'])
+    def search_inputted_text_on_pages():
+        text = request.form['text']
+        return render_template('pages.html', pages = backend.get_searched_pages(text))
 
     @app.route("/pages/<path:subpath>")
     def get_page(subpath):
@@ -36,6 +46,11 @@ def make_endpoints(app):
                                haley_img=haley,
                                khloe_img=khloe,
                                maize_img=maize)
+
+    @app.route('/about', methods=['POST'])
+    def search_inputted_text_on_about():
+        text = request.form['text']
+        return render_template('pages.html', pages = backend.get_searched_pages(text))
 
     @app.route("/upload", methods=['Get', 'POST'])
     def upload_file():
@@ -60,6 +75,12 @@ def make_endpoints(app):
     @app.route("/login")
     def login():
         return render_template('login.html')
+    
+    @app.route('/login', methods=['POST'])
+    def search_inputted_text_on_login():
+        text = request.form['text']
+        return render_template('pages.html', pages = backend.get_searched_pages(text))
+
 
     @app.route("/log_in", methods=["Get", "POST"])
     def login_post():
@@ -73,6 +94,12 @@ def make_endpoints(app):
     @app.route("/signup")
     def signup():
         return render_template('signup.html')
+    
+    @app.route('/signup', methods=['POST'])
+    def search_inputted_text_on_signup():
+        text = request.form['text']
+        return render_template('pages.html', pages = backend.get_searched_pages(text))
+
 
     @app.route("/sign_up", methods=["POST"])
     def signup_post():
