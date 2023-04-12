@@ -8,4 +8,61 @@
     <input type=file name=file accept=".txt, .jpg, .jpeg, .png">
     <input type=submit value=Upload>
 </form>
+
+<h2> Please Input for Information About Your Player </h2>
+<form>
+    <label for="position">Choose your player's position:</label>
+    <select name="position" id="position">
+        <option value="center">Center</option>
+        <option value="power-forward">Power Forward</option>
+        <option value="shooting-gaurd">Shooting Gaurd</option>
+        <option value="small-forward">Small Forward</option>
+        <option value="point-guard">Point Guard</option>
+    </select>
+    <br>
+    <label for="years">Draft Class:</label>
+    <select name="years" id="years">
+        {% for year in range(1946, 2024) %}
+            <option value="{{year}}">{{year}}</option>
+        {% endfor %}
+    </select>
+    <br>
+    <label for="teams">Please select teams player played for:</label>
+    <br>
+    {% set teams=['Atlanta Hawks', 
+        'Boston Celtics',
+        'Brooklyn Nets',
+        'Charlotte Hornets',
+        'Chicago Bulls', 
+        'Cleveland Cavaliers',
+        'Dallas Mavericks',
+        'Denver Nuggets',
+        'Detroit Pistons',
+        'Golden State Warriors',
+        'Houston Rockets',
+        'Indiana Pacers', 
+        'LA Clippers', 
+        'LA Lakers', 
+        'Memphis Grizzlies', 
+        'Miami Heat',
+        'Milwaukee Bucks', 
+        'Minnesota Timberwolves', 
+        'New Orleans Hornets', 
+        'New York Knicks', 
+        'Oklahoma City Thunder', 
+        'Orlando Magic', 
+        'Philadelphia Sixers', 
+        'Phoenix Suns', 
+        'Portland Trail Blazers', 
+        'Sacramento Kings',  
+        'San Antonio Spurs',  
+        'Toronto Raptors', 
+        'Utah Jazz', 
+        'Washington Wizards'] %}
+    {% for team in teams %}
+        <input type="checkbox" id="{{team}}" name="source" value="{{team}}">
+        <label for="{{team}}">{{team}}</label>
+        <br>
+    {% endfor %}
+</form>
 {% endblock %}
