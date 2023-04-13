@@ -63,26 +63,12 @@ class Backend:
         self.pages_by_name = defaultdict(list)
         self.pages_by_category = {
             'teams': {},
-            'years': {
-                1950: {},
-                1960: {},
-                1970: {},
-                1980: {},
-                1990: {},
-                2000: {},
-                2010: {},
-                2020: {}
-            },
-            'positions': {
-                'center': [],
-                'power forward': [],
-                'small forward': [],
-                'point guard': [],
-                'shooting guard': []
-            }
+            'years': {},
+            'positions': {}
         }
         self.full_sort_by_name()
         self.search_results = []
+        self.full_sort_by_category()
 
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
@@ -304,5 +290,9 @@ class Backend:
             if name != '':
                 self.pages_by_name[name].append("docs/" + filename)
 
-    def update_categories(self, teams, position, start_year, end_year):
-        decade = start_year / 10
+    def full_sort_by_category(self):
+        blob = self.content_bucket.blob('all-players/all_players.txt')
+        with blob.open("r") as f:
+            for line in f:
+                a = line.split('}, ')
+                
