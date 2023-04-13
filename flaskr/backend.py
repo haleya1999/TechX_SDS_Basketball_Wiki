@@ -78,6 +78,13 @@ class Backend:
         bucket_name = "wiki-contents"
         self.page = self.content_bucket.blob(name)
         return self.page
+    
+    def get_metadata(self, name):
+        bucket_name = "wiki-contents"
+        name = name[5:-4]
+        metadata_name = f"metadata/{name}-metadata.txt"
+        metadata = self.content_bucket.blob(metadata_name)
+        return metadata
 
     def get_all_page_names(self):
         """Returns all wiki pages.

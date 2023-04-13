@@ -24,7 +24,14 @@ def make_endpoints(app):
         page = backend.get_wiki_page(subpath)
         with page.open("r") as page:
             data = page.read()
-        return render_template('specific-wiki.html', page=subpath, data=data)
+        
+        metapage = backend.get_metadata(subpath)
+        print(metapage)
+        if metapage:        
+            with metapage.open("r") as metapage:
+                metadata = metapage.read()
+
+        return render_template('specific-wiki.html', page=subpath, data=data, metadata=metadata)
 
     @app.route("/about")
     def about():
