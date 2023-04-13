@@ -263,12 +263,6 @@ class Backend:
             }
             updated_dict = str(self.all_players)
             dictionary.writelines(updated_dict)
-        # self.all_players = json.loads(blob.download_as_string())
-        # self.all_players[filename] = {
-        #     'position': position,
-        #     'draft_year': draft_year,
-        #     'teams': teams
-        # }
         return self
 
 
