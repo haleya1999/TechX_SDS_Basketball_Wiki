@@ -5,11 +5,18 @@ from flaskr.backend import Backend
 
 class MockBlob:
 
-    def __init__(self, username):
-        self.name = username
+    def __init__(self):
+        self.name = "LBJ"
 
     def __enter__(self):
         return self
+    
+    def open(self, param):
+        if param == "r":
+            return
+        if param == "w":
+            return            
+
 
 
 class MockBucket:
@@ -18,7 +25,7 @@ class MockBucket:
         pass
 
     def blob(self, name):
-        return "LBJ"
+        return MockBlob()
 
     def image(self, name="test_img"):
         self.name = name
@@ -51,7 +58,7 @@ def test_get_wiki_page():
     mock_storage_client = MockStorageClient()
     backend_test = Backend(mock_storage_client)
     page = backend_test.get_wiki_page("blob-name")
-    assert page == "LBJ"
+    assert page.name == "LBJ"
 
 
 def test_get_image():
@@ -68,3 +75,14 @@ def test_get_image():
 
 def test_upload():
     pass
+
+def test_add_to_dict():
+    mock_storage_client = MockStorageClient()
+    backend_test = Backend(mock_storage_client)
+    backend_test.add_to_dict("test.txt", "center", 2012, ["Test Team"])
+    assert backend_test.all_players == {'test.txt': {
+        'position': 'center',
+        'draft_year': 2012,
+        'teams': ['Test Team']
+    }}
+
