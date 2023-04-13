@@ -16,6 +16,7 @@ from flask import request, render_template, session, Flask
 import os
 from flask_login import login_user, logout_user
 from datetime import datetime
+import ast
 
 
 class User:
@@ -249,11 +250,25 @@ class Backend:
         blob.make_public()
         return blob.public_url
     def add_to_dict(self, filename, position, draft_year, teams):
-        self.all_players[filename] = {
-            'position': position,
-            'draft_year': draft_year,
-            'teams': teams
-        }
+        players_file = "all-players/all_players.txt"
+        blob = self.content_bucket.blob(players_file)
+        with blob.open("r") as dictionary:
+            data = dictionary.read()
+            self.all_players = ast.literal_eval(data)            
+        with blob.open("w") as dictionary:
+            self.all_players[filename] = {
+                'position': position,
+                'draft_year': draft_year,
+                'teams': teams 
+            }
+            updated_dict = str(self.all_players)
+            dictionary.writelines(updated_dict)
+        # self.all_players = json.loads(blob.download_as_string())
+        # self.all_players[filename] = {
+        #     'position': position,
+        #     'draft_year': draft_year,
+        #     'teams': teams
+        # }
         return self
 
 
