@@ -219,3 +219,8 @@ class Backend:
         print(blob)
         blob.make_public()
         return blob.public_url
+
+    def save_edits(self, filename):
+        blob = self.content_bucket.blob(filename)
+        blob.upload_from_filename(filename)
+    
