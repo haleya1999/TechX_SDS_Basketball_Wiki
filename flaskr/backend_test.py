@@ -53,6 +53,11 @@ def test_get_wiki_page():
     page = backend_test.get_wiki_page("blob-name")
     assert page == "LBJ"
 
+def test_get_metadata():
+    mock_storage_client = MockStorageClient()
+    backend_test = Backend(mock_storage_client)
+    page = backend_test.get_metadata("blob-name")
+    assert page == "LBJ"
 
 def test_get_image():
     pass

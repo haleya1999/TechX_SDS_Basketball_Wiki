@@ -83,7 +83,9 @@ class Backend:
         bucket_name = "wiki-contents"
         name = name[5:-4]
         metadata_name = f"metadata/{name}-metadata.txt"
+        # Will throw error if no corresponding metadata file
         metadata = self.content_bucket.blob(metadata_name)
+        
         return metadata
 
     def get_all_page_names(self):
