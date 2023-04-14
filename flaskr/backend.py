@@ -17,7 +17,7 @@ import os
 from flask_login import login_user, logout_user
 from datetime import datetime
 from collections import defaultdict
-
+import json
 
 class User:
 
@@ -57,6 +57,7 @@ class Backend:
         self.myStorageClient = storage_client
         self.content_bucket = self.myStorageClient.bucket('wiki-contents')
         self.user_bucket = self.myStorageClient.bucket('users-passwds')
+
         self.page = None
         self.user = User("not-logged-in")
         self.opener = mock_file
@@ -64,25 +65,52 @@ class Backend:
         self.pages_by_category = {
             'teams': {},
             'years': {
-                1950: {},
-                1960: {},
-                1970: {},
-                1980: {},
-                1990: {},
-                2000: {},
-                2010: {},
-                2020: {}
+                1950: [],
+                1960: [],
+                1970: [],
+                1980: [],
+                1990: [],
+                2000: [],
+                2010: [],
+                2020: []
             },
             'positions': {
                 'center': [],
-                'power forward': [],
-                'small forward': [],
-                'point guard': [],
-                'shooting guard': []
+                'power-forward': [],
+                'small-forward': [],
+                'point-guard': [],
+                'shooting-guard': []
             }
         }
         self.full_sort_by_name()
+        self.categorize_players()
         self.search_results = []
+
+    def categorize_players(self):
+        all_players_file = self.content_bucket.blob("all-players/all_players.txt")
+        with all_players_file.open("r") as all_players_file:
+                json_dict = all_players_file.read()
+
+        all_players_dict = eval(json_dict.replace("'", "\""))
+        print(all_players_dict)
+        print(type(all_players_dict))
+        for player in all_players_dict:
+            if player != "all_players.txt":
+                draft_year = all_players_dict[player]['draft_year']
+                draft_year = int(draft_year)
+                draft_decade = round((draft_year - 5)/10)*10
+                self.pages_by_category['years'][draft_decade].append(player)
+                
+                position = all_players_dict[player]['position']
+                self.pages_by_category['positions'][position].append(player)
+
+                for team in all_players_dict[player]['teams']:
+                    if team not in self.pages_by_category['teams']:
+                        self.pages_by_category['teams'][team] = [player]
+                    else:
+                        self.pages_by_category['teams'][team].append(player)                             
+        print(self.pages_by_category)
+                             
 
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
