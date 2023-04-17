@@ -17,6 +17,7 @@ import os
 from flask_login import login_user, logout_user
 from datetime import datetime
 import ast
+import pickle
 
 
 class User:
@@ -249,7 +250,25 @@ class Backend:
         print(blob)
         blob.make_public()
         return blob.public_url
-    def add_to_dict(self, filename, position, draft_year, teams):
+
+    def update_player_metadata(self, filename, position, draft_year, teams):
+        '''
+        Adds player information to universal dictionary of all players uploaded 
+        to the wiki.
+
+        This will be used to conduct categorical searches on the pages uploaded to
+        the wiki.
+
+        Args:
+            self: An instance of the class.
+            filename: Name of the file user uploaded to the wiki.
+            position: Position the player plays that was inputted into HTML form.
+            draft_year: Year player was drafted
+            teams: List of teams player has played on.
+
+        Returns: 
+            N/A
+        '''
         players_file = "all-players/all_players.txt"
         blob = self.content_bucket.blob(players_file)
         with blob.open("r") as dictionary:
@@ -263,7 +282,7 @@ class Backend:
             }
             updated_dict = str(self.all_players)
             dictionary.writelines(updated_dict)
-        return self
+
 
 
 

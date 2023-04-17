@@ -56,7 +56,7 @@ def make_endpoints(app):
                 position = request.form['position']
                 draft_year = request.form['years']
                 teams = request.form.getlist('source')
-                backend.add_to_dict(filename, position, draft_year, teams)
+                backend.update_player_metadata(filename, position, draft_year, teams)
                 return redirect(request.url)
                 
         return render_template('uploads.html')
