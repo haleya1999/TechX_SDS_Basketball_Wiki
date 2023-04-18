@@ -63,9 +63,7 @@ class Backend:
         self.opener = mock_file
         self.pages_by_name = defaultdict(list)
         self.pages_by_category = defaultdict(list)
-        self.fill_sort_by_name()
         self.search_results = []
-        self.fill_sort_by_category()
 
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
