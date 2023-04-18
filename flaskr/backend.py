@@ -54,11 +54,16 @@ class Backend:
     def __init__(self, storage_client=storage.Client(), mock_file=open):
         self.pages = []
         self.myStorageClient = storage_client
-        self.content_bucket = self.myStorageClient.bucket('wiki-contents')
-        self.user_bucket = self.myStorageClient.bucket('users-passwds')
+        if storage_client == storage.Client():
+            self.content_bucket = self.myStorageClient.bucket('wiki-contents')
+            self.user_bucket = self.myStorageClient.bucket('users-passwds')
+        else:
+            self.content_bucket = self.myStorageClient.bucket['wiki-contents']
+            self.user_bucket = self.myStorageClient.bucket['users-passwds']
         self.page = None
         self.user = User("not-logged-in")
         self.opener = mock_file
+        self.metadata_file = ""
 
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
@@ -134,7 +139,7 @@ class Backend:
         source = source_name.rsplit('.', 1)
         metadata_file = source[0] + "-metadata"
         final_file_name = metadata_file + ".txt"
-        # print(final_file_name)
+        self.metadata_file = final_file_name
         f = self.opener(final_file_name, "w")
         visits = 0
         posted_at = datetime.now()
