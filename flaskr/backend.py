@@ -139,6 +139,17 @@ class Backend:
         '''
         Creates a metadata file to add to GCS buckets to keep
         track and update text files metadata.
+
+        Args:
+            self: instance of the class
+            source_name: the name of the text file that was
+            uploaded to the wiki.
+
+        Returns:
+            N/A
+
+        Raises: 
+            N/A
         '''
         source = source_name.rsplit('.', 1)
         metadata_file = source[0] + "-metadata"
