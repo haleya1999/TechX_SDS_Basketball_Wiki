@@ -17,6 +17,7 @@ import os
 from flask_login import login_user, logout_user
 from datetime import datetime
 from collections import defaultdict
+import pickle
 
 
 class User:
@@ -61,11 +62,7 @@ class Backend:
         self.user = User("not-logged-in")
         self.opener = mock_file
         self.pages_by_name = defaultdict(list)
-        self.pages_by_category = {
-            'teams': {},
-            'years': {},
-            'positions': {}
-        }
+        self.pages_by_category = defaultdict(list)
         self.full_sort_by_name()
         self.search_results = []
         self.full_sort_by_category()
@@ -291,8 +288,15 @@ class Backend:
                 self.pages_by_name[name].append("docs/" + filename)
 
     def full_sort_by_category(self):
-        blob = self.content_bucket.blob('all-players/all_players.txt')
-        with blob.open("r") as f:
-            for line in f:
-                a = line.split('}, ')
-                
+        blob = self.content_bucket.blob('all-players/all_players.pkl')
+        with blob.open("rb") as f:
+            data = f.read()
+        d = pickle.loads(data)
+        print(d)
+        for player in d:
+            self.pages_by_category[d[player]['position']].append(player)
+            self.pages_by_category[d[player]['draft_year']].append(player)
+            teams = [d[player]['teams']]
+            for team in teams:
+                for i in range(len(team)):
+                    self.pages_by_category[team[i]].append(player)
