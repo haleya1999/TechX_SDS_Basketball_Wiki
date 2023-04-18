@@ -50,7 +50,7 @@ def make_endpoints(app):
             if file and file.filename.rsplit(
                     '.', 1)[1].lower() in allowed_extensions:
                 filename = secure_filename(file.filename)
-                backend.single_sort_by_name(filename)
+                backend.update_sort_by_name(filename)
                 file.save(os.path.abspath(filename))
                 backend.upload(file.filename)
                 return redirect(request.url)

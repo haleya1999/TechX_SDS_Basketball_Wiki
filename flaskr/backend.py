@@ -63,9 +63,9 @@ class Backend:
         self.opener = mock_file
         self.pages_by_name = defaultdict(list)
         self.pages_by_category = defaultdict(list)
-        self.full_sort_by_name()
+        self.fill_sort_by_name()
         self.search_results = []
-        self.full_sort_by_category()
+        self.fill_sort_by_category()
 
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
@@ -248,7 +248,7 @@ class Backend:
         blob.make_public()
         return blob.public_url
 
-    def full_sort_by_name(self):
+    def fill_sort_by_name(self):
         """fill a dictionary with names and a list of pages from GCS corresponding to each name
 
         Args:
@@ -269,7 +269,7 @@ class Backend:
                 if name != '':
                     self.pages_by_name[name].append(page.name)
 
-    def single_sort_by_name(self, filename):
+    def update_sort_by_name(self, filename):
         """update name dictionary with info from uploaded files
 
         Args:
@@ -281,22 +281,31 @@ class Backend:
         Raises:
             N/A
         """
+        #remove file extension from filename
         title = filename[:-4]
         names = title.split('-')
         for name in names:
-            if name != '':
-                self.pages_by_name[name].append("docs/" + filename)
+            self.pages_by_name[name].append("docs/" + filename)
 
-    def full_sort_by_category(self):
+    def fill_sort_by_category(self):
+        """update category dictionary with saved data in GCS
+
+        Args:
+            self: Instance of the class.
+            
+
+        Returns:
+            N/A
+        Raises:
+            N/A
+        """
         blob = self.content_bucket.blob('all-players/all_players.pkl')
         with blob.open("rb") as f:
             data = f.read()
-        d = pickle.loads(data)
-        print(d)
-        for player in d:
-            self.pages_by_category[d[player]['position']].append(player)
-            self.pages_by_category[d[player]['draft_year']].append(player)
-            teams = [d[player]['teams']]
+        data = pickle.loads(data)
+        for player in data:
+            self.pages_by_category[data[player]['position']].append(player)
+            self.pages_by_category[data[player]['draft_year']].append(player)
+            teams = data[player]['teams']
             for team in teams:
-                for i in range(len(team)):
-                    self.pages_by_category[team[i]].append(player)
+                self.pages_by_category[team].append(player)
