@@ -58,9 +58,12 @@ class MockStorageClient:
 
 
 class MockFile:
-    def __init__(self):
+    def __init__(self, filename, param) :
         self.content = ""
         self.filename = ""
+
+    def open(self):
+        pass
     
     def set_filename(self, name):
         self.filename = name
@@ -96,16 +99,9 @@ def test_upload():
     pass
 
 def test_create_metadata():
-    test_file = MockFile()
-    def mock_open(filename, _):
-        test_file.set_filename(test_file)
-        test_file.write("Author: Khloe W.")
-        return test_file
-    # original_open = open
-    # open = mock_open
+    test_file = MockFile("test_file.txt", "")
     mock_storage_client = MockStorageClient()
-    backend = Backend(storage_client=mock_storage_client, mock_file=mock_open)
+    backend = Backend(storage_client=mock_storage_client, mock_file=test_file)
     backend.create_metadata("test_file")
-    # open = original_open
     assert backend.metadata_file == "test_file-metadata.txt"
     assert test_file.content == "Number of Vists: 0\n"

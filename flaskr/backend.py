@@ -136,11 +136,18 @@ class Backend:
                        
 
     def create_metadata(self, source_name):
+        '''
+        Creates a metadata file to add to GCS buckets to keep
+        track and update text files metadata.
+        '''
         source = source_name.rsplit('.', 1)
         metadata_file = source[0] + "-metadata"
         final_file_name = metadata_file + ".txt"
         self.metadata_file = final_file_name
-        f = self.opener(final_file_name, "w")
+        if self.opener == open:
+            f = self.opener(final_file_name, "w")
+        else:
+            f = self.opener
         visits = 0
         posted_at = datetime.now()
         author = self.user.username
