@@ -152,6 +152,19 @@ class Backend:
         blob.upload_from_filename(final_file_name, if_generation_match=generation_match_precondition)
 
     def update_metadata(self, source_name):
+        '''
+        Updates metadata for specific page.
+
+        Args:
+            self: instance of the class.
+            source_name: name of text file that User clicked on.
+
+        Returns:
+            N/A
+
+        Raises:
+            N/A
+        '''
         print(source_name)
         print("gets to metadata")
         self.metadata_page = self.content_bucket.blob(f"metadata/{source_name}")
@@ -266,5 +279,3 @@ class Backend:
         blob.make_public()
         return blob.public_url
 
-test = Backend()
-test.update_metadata("test1-metadata.txt")
