@@ -61,9 +61,10 @@ class Backend:
             self.content_bucket = self.myStorageClient.bucket['wiki-contents']
             self.user_bucket = self.myStorageClient.bucket['users-passwds']
         self.page = None
-        self.user = User("not-logged-in")
+        self.user = 0
         self.opener = mock_file
         self.metadata_file = ""
+        self.username = ""
 
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
@@ -161,7 +162,7 @@ class Backend:
             f = self.opener
         visits = 0
         posted_at = datetime.now()
-        author = self.user.username
+        author = self.username
         f.write(f"Author: {author}\n")
         f.write(f"Posted at: {posted_at}\n")
         f.write(f"Number of Vists: {visits}\n")
@@ -192,8 +193,9 @@ class Backend:
             if not isinstance(blob, str):
                 f1 = blob.open('wb')
                 f1.write(bytes(m.hexdigest(), 'utf-8'))
-                self.user = User(blob.name)
-                login_user(self.user)
+                user = User(blob.name)
+                self.username = username
+                login_user(user)
                 return True
             else:
                 return True
@@ -226,9 +228,10 @@ class Backend:
                 bytes(n.hexdigest(), 'utf-8').decode('utf-8'))
             print(hashed_input_pword1)
             if password1 == hashed_input_pword1:
-                self.user = User(blob.name)
+                user = User(blob.name)
                 if blob.name != "LeBron James":
-                    login_user(self.user)
+                    login_user(user)
+                    self.username = username
                     print("User logged in")
                 # last stopped here - Maize
                 return True
