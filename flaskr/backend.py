@@ -269,20 +269,22 @@ class Backend:
         Returns: 
             N/A
         '''
-        players_file = "all-players/all_players.txt"
+        players_file = "all-players/all_players.pkl"
         blob = self.content_bucket.blob(players_file)
-        with blob.open("r") as dictionary:
-            data = dictionary.read()
-            self.all_players = ast.literal_eval(data)            
-        with blob.open("w") as dictionary:
+        try:
+            with blob.open("rb") as dictionary:
+                self.all_players = pickle.load(dictionary)    
+        except TypeError as e:
+            raise e              
+        except:
+            self.all_players = {}     
+        with blob.open("wb") as dictionary:
             self.all_players[filename] = {
                 'position': position,
                 'draft_year': draft_year,
                 'teams': teams 
             }
-            updated_dict = str(self.all_players)
-            dictionary.writelines(updated_dict)
-
+            pickle.dump(self.all_players, dictionary)
 
 
 

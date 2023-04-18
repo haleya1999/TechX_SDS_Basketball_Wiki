@@ -1,4 +1,7 @@
+import pytest
 from flaskr.backend import Backend
+from collections import defaultdict
+from unittest.mock import MagicMock, patch, Mock, mock_open
 
 # TODO(Project 1): Write tests for Backend methods.
 
@@ -11,21 +14,31 @@ class MockBlob:
     def __enter__(self):
         return self
     
+    def __exit__(self, _1, _2, _3):
+        pass
+
     def open(self, param):
-        if param == "r":
-            return
-        if param == "w":
-            return            
+        return self          
+
+    def read(self, _):
+        return bytes()
+
+    def readline(self):
+        return bytes()
+
+    def write(self, contents):
+        pass
+
 
 
 
 class MockBucket:
 
     def __init__(self):
-        pass
+        self.blobs = defaultdict(MockBlob)
 
     def blob(self, name):
-        return MockBlob()
+        return self.blobs[name]
 
     def image(self, name="test_img"):
         self.name = name
@@ -35,15 +48,18 @@ class MockBucket:
 class MockStorageClient:
 
     def __init__(self):
-        pass
+        self.bucket = defaultdict(MockBucket)
 
     def list_blobs(self, name, prefix=""):
         return ["LeBron James", "Stephen Curry", "Bill Russel", "Larry Bird"]
 
     def bucket(self, bucket_name):
-        mock_bucket = MockBucket()
-        return MockBucket()
+        return self.bucket[bucket_name]
 
+@pytest.fixture
+def open_mock(content):
+    test_file = ""
+    return mock_open(content, test_file)
 
 def test_get_all_pages():
     mock_storage_client = MockStorageClient()
@@ -76,13 +92,12 @@ def test_get_image():
 def test_upload():
     pass
 
-def test_add_to_dict():
+def test_update_player_metadata(blob):
     mock_storage_client = MockStorageClient()
-    backend_test = Backend(mock_storage_client)
-    backend_test.add_to_dict("test.txt", "center", 2012, ["Test Team"])
+    backend_test = Backend(mock_storage_client, open_mock)
+    backend_test.update_player_metadata("test.txt", "center", 2012, ["Test Team"])
     assert backend_test.all_players == {'test.txt': {
         'position': 'center',
         'draft_year': 2012,
         'teams': ['Test Team']
     }}
-
