@@ -92,7 +92,7 @@ def test_get_image():
 def test_upload():
     pass
 
-def test_update_player_metadata(blob):
+def test_update_player_metadata():
     mock_storage_client = MockStorageClient()
     backend_test = Backend(mock_storage_client, open_mock)
     backend_test.update_player_metadata("test.txt", "center", 2012, ["Test Team"])

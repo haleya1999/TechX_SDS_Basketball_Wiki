@@ -56,8 +56,13 @@ class Backend:
     def __init__(self, storage_client=storage.Client(), mock_file=open):
         self.pages = []
         self.myStorageClient = storage_client
-        self.content_bucket = self.myStorageClient.bucket('wiki-contents')
-        self.user_bucket = self.myStorageClient.bucket('users-passwds')
+        if storage_client == storage.Client():
+            self.content_bucket = self.myStorageClient.bucket('wiki-contents')
+            self.user_bucket = self.myStorageClient.bucket('users-passwds')
+        else:
+            self.content_bucket = self.myStorageClient.bucket['wiki-contents']
+            self.user_bucket = self.myStorageClient.bucket['users-passwds']
+            
         self.page = None
         self.user = User("not-logged-in")
         self.opener = mock_file
