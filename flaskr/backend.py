@@ -153,8 +153,7 @@ class Backend:
             N/A
         '''
         source = source_name.rsplit('.', 1)
-        metadata_file = source[0] + "-metadata"
-        final_file_name = metadata_file + ".txt"
+        final_file_name = f"{source[0]}-metadata.txt"
         self.metadata_file = final_file_name
         if self.opener == open:
             f = self.opener(final_file_name, "w")
