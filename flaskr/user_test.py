@@ -4,8 +4,24 @@ from unittest.mock import MagicMock, patch, Mock, mock_open
 from flask_login import LoginManager
 from flask import Flask
 from collections import defaultdict
-from backend import User
 
+class User:
+
+    def __init__(self, username):
+        self.username = username
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.username
+        
 @pytest.fixture
 def create_app():
     app = Flask(__name__)
