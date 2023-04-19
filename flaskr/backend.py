@@ -94,6 +94,7 @@ class Backend:
         }
         
         self.categorize_players()
+        print(self.pages_by_category)
         self.fill_sort_by_name()
 
         self.search_results = []
@@ -133,9 +134,8 @@ class Backend:
                         self.pages_by_category['teams'][team] = [player]
                     else:
                         self.pages_by_category['teams'][team].append(player)                             
-        print(self.pages_by_category)
                              
-        self.pages_by_category = defaultdict(list)
+        
         self.search_results = []
 
         
@@ -183,8 +183,30 @@ class Backend:
             if page.name in search_results:
                 self.searched_pages.append(page)
         
+        print(self.searched_pages[0].name)
+        print('hi')        
         return self.searched_pages    
 
+    def search_by_category(self, valid_pages):
+        # selected_position = request.form["position"]
+        # selected_draft_year = request.form["decade"]
+        # selected_teams = request.form["team"]
+        in_position = set()
+        in_draft_year = set()
+        in_team = set()  
+        for player in self.searched_pages:
+            name = player.name
+            name = name[5:]
+            if name in self.pages_by_category[selected_position]:
+                in_position.add(player)            
+            if name in self.pages_by_category[selected_draft_year]:
+                in_draft_year.add(player) 
+            for team in selected_teams:
+                if name in self.pages_by_category['teams'][team]:
+                    in_team.add(player)
+                    break
+            
+        return list(in_position.intersection(in_draft_year, in_team))
 
     def get_all_page_names(self):
         """Returns all wiki pages.
@@ -287,7 +309,7 @@ class Backend:
         else:
             return False
 
-    def sign_in(self, username, password):
+    def sign_in(self, username, password, mock_open=open):
         """Finds filename that matches with inputted username and evaluates if the inputted password is correct.
 
         Args:
@@ -306,18 +328,15 @@ class Backend:
             prefix = "saltymelon"
             n = hashlib.sha256()
             n.update(bytes(prefix + password, 'utf-8'))
-            f1 = blob.open('r')
+            if not isinstance(blob, str):
+                f1 = blob.open('r')
             password1 = str(f1.read())
-            print(password1)
             hashed_input_pword1 = str(
                 bytes(n.hexdigest(), 'utf-8').decode('utf-8'))
-            print(hashed_input_pword1)
             if password1 == hashed_input_pword1:
                 self.user = User(blob.name)
                 if blob.name != "LeBron James":
                     login_user(self.user)
-                    print("User logged in")
-                # last stopped here - Maize
                 return True
             else:
                 return False
@@ -326,7 +345,6 @@ class Backend:
 
     def logout(self):
         logout_user()
-        # return redirect()
 
     def get_image(self, img_name):
         """Get specified image public url
@@ -424,27 +442,4 @@ class Backend:
         names = title.split('-')
         for name in names:
             self.pages_by_name[name].append("docs/" + filename)
-
-    def fill_sort_by_category(self):
-        """update category dictionary with saved data in GCS
-
-        Args:
-            self: Instance of the class.
-            
-
-        Returns:
-            N/A
-        Raises:
-            N/A
-        """
-        blob = self.content_bucket.blob('all-players/all_players.pkl')
-        with blob.open("rb") as f:
-            data = f.read()
-        data = pickle.loads(data)
-        for player in data:
-            self.pages_by_category[data[player]['position']].append(player)
-            self.pages_by_category[data[player]['draft_year']].append(player)
-            teams = data[player]['teams']
-            for team in teams:
-                self.pages_by_category[team].append(player)
 
