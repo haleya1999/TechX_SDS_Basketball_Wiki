@@ -69,6 +69,7 @@ class Backend:
 
         self.page = None
         self.user = User("not-logged-in")
+        self.username = ''
         self.opener = mock_file
         self.metadata_page = None
         self.pages_by_name = defaultdict(list)
@@ -175,11 +176,6 @@ class Backend:
                              
         
         self.search_results = []
-        self.full_sort_by_name()
-        self.searched_pages = []
-        self.metadata_file = ""
-        self.username = ""
-
 
         
     def get_wiki_page(self, name):
@@ -198,8 +194,9 @@ class Backend:
             N/A
         """
         self.page = self.content_bucket.blob(name)
-        metadata_file = f"{name[5:-4]}-metadata.txt"
-        self.update_metadata(metadata_file)
+        if type(self.myStorageClient) == type(storage.Client()):        
+            metadata_file = f"{name[5:-4]}-metadata.txt"
+            self.update_metadata(metadata_file)
         return self.page
     
     def get_searched_pages(self, text):
@@ -291,34 +288,7 @@ class Backend:
         for page in all_pages:
             self.pages.append(page)
         return self.pages
-    
-    def get_searched_pages(self, text):
-        self.searched_pages = []
-        bucket_name = "wiki-contents"
-        all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
-        
-        processed_text = text.lower()
-        processed_text.replace("-", " ")
-        text_list = processed_text.split()
-        num_words = len(text_list)
-        search_results_counter = {}
-        search_results = []        
-        for name in text_list:
-            if name in self.pages_by_name:
-                if self.pages_by_name[name][0] in search_results_counter:
-                    search_results_counter[self.pages_by_name[name][0]] += 1
-                else:
-                    search_results_counter[self.pages_by_name[name][0]] = 1
-
-        for page in search_results_counter:
-            if search_results_counter[page] >= num_words:
-                search_results.append(page)
-        
-        for page in all_pages:
-            if page.name in search_results:
-                self.searched_pages.append(page)
-        
-        return self.searched_pages    
+       
 
     def upload(self, source_name):
         """Returns all wiki pages.
@@ -408,6 +378,7 @@ class Backend:
         print(self.metadata_page)
         with self.metadata_page.open("r") as metadata_page:
             data = metadata_page.readlines()
+            print(1)
             print(data)
             visits = data[2]
             amt_visits = int(visits[-2])
@@ -514,8 +485,6 @@ class Backend:
         blob.make_public()
         return blob.public_url
 
-
-<<<<<<< flaskr/backend.py
     def update_player_metadata(self, filename, position, draft_year, teams):
         '''
         Adds player information to universal dictionary of all players uploaded 
@@ -587,11 +556,12 @@ class Backend:
         bucket_name = "wiki-contents"
         all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
         for page in all_pages:
-            title = page.name[5:-4]
-            names = title.split('-')
-            for name in names:
-                if name != '':
-                    self.pages_by_name[name].append(page.name)
+            if not isinstance(page, str):
+                title = page.name[5:-4]
+                names = title.split('-')
+                for name in names:
+                    if name != '':
+                        self.pages_by_name[name].append(page.name)
 
     def update_sort_by_name(self, filename):
         """update name dictionary with info from uploaded files

@@ -25,26 +25,9 @@ class MockBlob:
 
     def readline(self):
         return bytes()
-
-    def write(self, contents):
-        pass
-
-
-
-    def name(self):
-        return self.name
-
-    def __exit__(self, _1, _2, _3):
-        pass
-
-    def open(self, param):
-        return self
-
-    def read(self, _):
-        return bytes()
-
-    def readline(self):
-        return bytes()
+    
+    def readlines(self):
+        return "Test String"
 
     def write(self, contents):
         pass
@@ -112,7 +95,7 @@ class MockFile:
         return self
 
 def test_get_all_pages():
-    mock_storage_client = MockStorageClient()
+    mock_storage_client = MockStorageClient()    
     backend_test = Backend(mock_storage_client)
     all_pages = backend_test.get_all_page_names()
     assert all_pages == [
