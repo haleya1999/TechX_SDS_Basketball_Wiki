@@ -1,9 +1,14 @@
 {% extends "template.html" %} 
 
+{% block page_name %} {{page}} {% endblock %}
+
 {% block content %}
+<br>
+<a href="/pages/{{page}}/edit">Edit Page</a>
 <html>
     <h1>{{page[5:-4]}}</h1>
     <br>
     <p>{{data}}</p>
+
 </html>
 {% endblock %}

@@ -17,10 +17,12 @@ import os
 from collections import defaultdict
 from flask_login import login_user, logout_user
 from datetime import datetime
+
 import ast
 from collections import defaultdict
 import json
 import pickle
+
 
 class User:
 
@@ -58,8 +60,6 @@ class Backend:
     def __init__(self, storage_client=storage.Client(), mock_file=open):
         self.pages = []
         self.myStorageClient = storage_client
-
-        print(type(self.myStorageClient))
         if type(self.myStorageClient) == type(storage.Client()):
             self.content_bucket = self.myStorageClient.bucket('wiki-contents')
             self.user_bucket = self.myStorageClient.bucket('users-passwds')
@@ -70,6 +70,7 @@ class Backend:
         self.page = None
         self.user = User("not-logged-in")
         self.opener = mock_file
+        self.metadata_page = None
         self.pages_by_name = defaultdict(list)
 
         self.pages_by_category = {
@@ -174,6 +175,11 @@ class Backend:
                              
         
         self.search_results = []
+        self.full_sort_by_name()
+        self.searched_pages = []
+        self.metadata_file = ""
+        self.username = ""
+
 
         
     def get_wiki_page(self, name):
@@ -192,6 +198,8 @@ class Backend:
             N/A
         """
         self.page = self.content_bucket.blob(name)
+        metadata_file = f"{name[5:-4]}-metadata.txt"
+        self.update_metadata(metadata_file)
         return self.page
     
     def get_searched_pages(self, text):
@@ -279,9 +287,38 @@ class Backend:
         self.pages = []
         bucket_name = "wiki-contents"
         all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
+        self.pages = []
         for page in all_pages:
             self.pages.append(page)
         return self.pages
+    
+    def get_searched_pages(self, text):
+        self.searched_pages = []
+        bucket_name = "wiki-contents"
+        all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
+        
+        processed_text = text.lower()
+        processed_text.replace("-", " ")
+        text_list = processed_text.split()
+        num_words = len(text_list)
+        search_results_counter = {}
+        search_results = []        
+        for name in text_list:
+            if name in self.pages_by_name:
+                if self.pages_by_name[name][0] in search_results_counter:
+                    search_results_counter[self.pages_by_name[name][0]] += 1
+                else:
+                    search_results_counter[self.pages_by_name[name][0]] = 1
+
+        for page in search_results_counter:
+            if search_results_counter[page] >= num_words:
+                search_results.append(page)
+        
+        for page in all_pages:
+            if page.name in search_results:
+                self.searched_pages.append(page)
+        
+        return self.searched_pages    
 
     def upload(self, source_name):
         """Returns all wiki pages.
@@ -314,25 +351,77 @@ class Backend:
         os.remove(source_name)
 
     def create_metadata(self, source_name):
+        '''
+        Creates a metadata file to add to GCS buckets to keep
+        track and update text files metadata.
+
+        Args:
+            self: instance of the class
+            source_name: the name of the text file that was
+            uploaded to the wiki.
+
+        Returns:
+            N/A
+
+
+        Raises: 
+            N/A
+        '''
         source = source_name.rsplit('.', 1)
-        metadata_file = source[0] + "-metadata"
-        final_file_name = metadata_file + ".txt"
-        print(final_file_name)
-        with open(final_file_name, "w") as f:
-            # author, time, visits,
-            # number of visits
-            # time it was posted
-            visits = 0
-            posted_at = datetime.now()
-            author = self.user.username
-            f.write(f"Author: {author}\n")
-            f.write(f"Posted at: {posted_at}\n")
-            f.write(f"Number of Vists: {visits}\n")
+        final_file_name = f"{source[0]}-metadata.txt"
+        self.metadata_file = final_file_name
+        if self.opener == open:
+            f = self.opener(final_file_name, "w")
+        else:
+            f = self.opener
+        visits = 0
+        posted_at = datetime.now()
+        author = self.username
+        f.write(f"Author: {author}\n")
+        f.write(f"Posted at: {posted_at}\n")
+        f.write(f"Number of Vists: {visits}\n")
+        f.close()
         blob = self.content_bucket.blob("metadata/" + final_file_name)
         generation_match_precondition = 0
         blob.upload_from_filename(
             final_file_name, if_generation_match=generation_match_precondition)
 
+
+    def update_metadata(self, source_name):
+        '''
+        Updates metadata for specific page.
+
+        Args:
+            self: instance of the class.
+            source_name: name of text file that User clicked on.
+
+        Returns:
+            N/A
+
+        Raises:
+            N/A
+        '''
+        print(source_name)
+        print("gets to metadata")
+        self.metadata_page = self.content_bucket.blob(f"metadata/{source_name}")
+        modified_data = None
+        print(self.metadata_page)
+        with self.metadata_page.open("r") as metadata_page:
+            data = metadata_page.readlines()
+            print(data)
+            visits = data[2]
+            amt_visits = int(visits[-2])
+            amt_visits += 1
+            print(amt_visits)
+            data[2] = f"Number of Vists: {amt_visits}\n"
+            modified_data = data
+            print(modified_data)
+        with self.metadata_page.open("w") as metadata_page:
+            metadata_page.writelines(modified_data)
+        blob = self.metadata_page
+        blob.upload_from_filename(source_name)
+
+        
     def sign_up(self, username, password):
         """Uploads file with hashed password into the user_bucket and uses the username as the key.
 
@@ -355,8 +444,9 @@ class Backend:
             if not isinstance(blob, str):
                 f1 = blob.open('wb')
                 f1.write(bytes(m.hexdigest(), 'utf-8'))
-                self.user = User(blob.name)
-                login_user(self.user)
+                user = User(blob.name)
+                self.username = username
+                login_user(user)
                 return True
             else:
                 return True
@@ -388,9 +478,11 @@ class Backend:
             hashed_input_pword1 = str(
                 bytes(n.hexdigest(), 'utf-8').decode('utf-8'))
             if password1 == hashed_input_pword1:
-                self.user = User(blob.name)
+                user = User(blob.name)
                 if blob.name != "LeBron James":
-                    login_user(self.user)
+                    login_user(user)
+                    self.username = username
+                    print("User logged in")
                 return True
             else:
                 return False
@@ -423,6 +515,7 @@ class Backend:
         return blob.public_url
 
 
+<<<<<<< flaskr/backend.py
     def update_player_metadata(self, filename, position, draft_year, teams):
         '''
         Adds player information to universal dictionary of all players uploaded 
@@ -457,6 +550,27 @@ class Backend:
                 'teams': teams
             }
             pickle.dump(self.all_players, dictionary)
+
+    def save_edits(self, filename, text):
+        '''
+        This method uploads newly edited wiki page back to GCS buckets.
+
+        Args:
+            self: An instance of the class.
+            filename: The file that is being edited.
+            text: The updated text that goes on the wiki page.
+
+        Returns:
+            N/A
+        
+        Raises:
+            N/A
+        '''
+        blob = self.content_bucket.blob(filename)
+        with blob.open("w") as blob:
+            blob.writelines(text)
+        blob.upload_from_filename(filename)
+    
 
     def fill_sort_by_name(self):
         """fill a dictionary with names and a list of pages from GCS corresponding to each name
@@ -518,3 +632,39 @@ class Backend:
             return text_list.join(" ")                
         else:
             return ""
+
+    def update_player_metadata(self, filename, position, draft_year, teams):
+        '''
+        Adds player information to universal dictionary of all players uploaded 
+        to the wiki.
+
+        This will be used to conduct categorical searches on the pages uploaded to
+        the wiki.
+
+        Args:
+            self: An instance of the class.
+            filename: Name of the file user uploaded to the wiki.
+            position: Position the player plays that was inputted into HTML form.
+            draft_year: Year player was drafted
+            teams: List of teams player has played on.
+
+        Returns: 
+            N/A
+        '''
+        players_file = "all-players/all_players.pkl"
+        blob = self.content_bucket.blob(players_file)
+        try:
+            with blob.open("rb") as dictionary:
+                self.all_players = pickle.load(dictionary)    
+        except TypeError as e:
+            raise e              
+        except:
+            self.all_players = {}     
+        with blob.open("wb") as dictionary:
+            self.all_players[filename] = {
+                'position': position,
+                'draft_year': draft_year,
+                'teams': teams
+            }
+            pickle.dump(self.all_players, dictionary)
+

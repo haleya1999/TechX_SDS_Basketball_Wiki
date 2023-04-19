@@ -12,8 +12,6 @@ def make_endpoints(app):
     # go to a specific route on the project's website.
     @app.route("/")
     def home():
-        # TODO(Checkpoint Requirement 2 of 3): Change this to use render_template
-        # to render main.html on the home page.
         return render_template('main.html')
 
     @app.route('/', methods=['GET','POST'])
@@ -33,6 +31,11 @@ def make_endpoints(app):
     def pages():
         pages = backend.get_all_page_names()
         return render_template('pages.html', pages=pages)
+    
+    @app.route('/pages', methods=['POST'])
+    def search_inputted_text_on_pages():
+        text = request.form['text']
+        return render_template('pages.html', pages = backend.get_searched_pages(text))
 
     @app.route('/pages', methods=['GET','POST'])
     def search_inputted_text_on_pages():
@@ -53,6 +56,30 @@ def make_endpoints(app):
         with page.open("r") as page:
             data = page.read()
         return render_template('specific-wiki.html', page=subpath, data=data)
+    
+    # @app.route("/pages/<path:subpath>/edit", methods=['Get', 'POST'])
+    # def edits(subpath):
+    #     if request.method == "POST":
+    #         form_data = request.form['editor']
+    #         #change txt file
+    #         #maybe change metadata
+    #         pass
+    #     #get text from page
+    #     data = ""
+    #     return render_template('editor.html', page=subpath, data=data)
+
+    @app.route("/pages/<path:subpath>/edit", methods=['Get', 'POST'])
+    def edits(subpath):
+        if request.method == "POST":
+            form_data = request.form['editor']
+            #change txt file
+            #maybe change metadata
+            pass
+        #get text from page
+        page = backend.get_wiki_page(subpath)
+        with page.open("r") as page:
+            data = page.read()
+        return render_template('editor.html', page=subpath, data=data)
 
     @app.route("/about")
     def about():
@@ -77,7 +104,7 @@ def make_endpoints(app):
         print(selected_teams)
         return render_template('pages.html', pages = backend.search_by_category(backend.get_searched_pages(text), selected_position, selected_draft_year, selected_teams))
 
-    @app.route("/upload", methods=['GET','POST'])
+    @app.route("/upload", methods=['Get', 'POST'])
     def upload_file():
         if request.method == 'POST':
             allowed_extensions = {"txt", "jpg", "jpeg", "png", "gif"}
@@ -103,9 +130,16 @@ def make_endpoints(app):
 
         return render_template('uploads.html')
 
+
     @app.route("/login")
     def login():
         return render_template('login.html')
+    
+    @app.route('/login', methods=['POST'])
+    def search_inputted_text_on_login():
+        text = request.form['text']
+        return render_template('pages.html', pages = backend.get_searched_pages(text))
+
 
     @app.route("/log_in", methods=["Get", "POST"])
     def login_post():
@@ -132,6 +166,12 @@ def make_endpoints(app):
     @app.route("/signup")
     def signup():
         return render_template('signup.html')
+    
+    @app.route('/signup', methods=['POST'])
+    def search_inputted_text_on_signup():
+        text = request.form['text']
+        return render_template('pages.html', pages = backend.get_searched_pages(text))
+
 
     @app.route("/sign_up", methods=["POST"])
     def signup_post():
@@ -159,5 +199,3 @@ def make_endpoints(app):
     def logout():
         backend.logout()
         return render_template('main.html')
-
-    # TODO(Project 1): Implement additional routes according to the project requirements.

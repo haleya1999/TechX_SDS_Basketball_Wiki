@@ -34,6 +34,24 @@ class MockBlob:
     def name(self):
         return self.name
 
+    def __exit__(self, _1, _2, _3):
+        pass
+
+    def open(self, param):
+        return self
+
+    def read(self, _):
+        return bytes()
+
+    def readline(self):
+        return bytes()
+
+    def write(self, contents):
+        pass
+
+    def upload_from_filename(self, filename, if_generation_match):
+        pass
+
 
 class MockBucket:
 
@@ -75,6 +93,23 @@ class mockstorage:
     def bucket(self, name):
         pass
 
+class MockFile:
+
+    def __init__(self, filename, param):
+        self.content = ""
+        self.filename = ""
+
+    def open(self):
+        pass
+
+    def set_filename(self, name):
+        self.filename = name
+
+    def write(self, content):
+        self.content = content
+
+    def close(self):
+        return self
 
 def test_get_all_pages():
     mock_storage_client = MockStorageClient()
@@ -96,17 +131,8 @@ def test_get_image():
     pass
 
 
-"""
-    mock_storage_client = MockStorageClient()
-    backend_test = Backend(mock_storage_client)
-    image = "test_img.jpg"
-    assert backend_test.get_image(image) == "test_img.jpg"
-"""
-
-
 def test_upload():
     pass
-
 
 def test_update_player_metadata():
     mock_storage_client = MockStorageClient()
@@ -138,4 +164,12 @@ def test_fill_names():
         'test': ['docs/test-file.txt'],
         'name': ['docs/file-name.txt']
     }
+
+def test_create_metadata():
+    test_file = MockFile("test_file.txt", "")
+    mock_storage_client = MockStorageClient()
+    backend = Backend(storage_client=mock_storage_client, mock_file=test_file)
+    backend.create_metadata("test_file")
+    assert backend.metadata_file == "test_file-metadata.txt"
+    assert test_file.content == "Number of Vists: 0\n"
 
