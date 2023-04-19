@@ -115,5 +115,5 @@ def test_login_with_invalid_username():
 def test_login_with_valid_username():
     mock_storage_client = MockStorageClient()
     backend_test = Backend(mock_storage_client)
-    assert backend_test.sign_in("LeBron James", "password") == True
-    assert backend_test.sign_in("LeBron James", "notpassword") == False
+    assert backend_test.sign_in("LeBron James", "password", mock_open) == True
+    assert backend_test.sign_in("LeBron James", "notpassword", mock_open) == False

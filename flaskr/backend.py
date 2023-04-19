@@ -309,7 +309,7 @@ class Backend:
         else:
             return False
 
-    def sign_in(self, username, password):
+    def sign_in(self, username, password, mock_open=open):
         """Finds filename that matches with inputted username and evaluates if the inputted password is correct.
 
         Args:
@@ -330,16 +330,12 @@ class Backend:
             n.update(bytes(prefix + password, 'utf-8'))
             f1 = blob.open('r')
             password1 = str(f1.read())
-            print(password1)
             hashed_input_pword1 = str(
                 bytes(n.hexdigest(), 'utf-8').decode('utf-8'))
-            print(hashed_input_pword1)
             if password1 == hashed_input_pword1:
                 self.user = User(blob.name)
                 if blob.name != "LeBron James":
                     login_user(self.user)
-                    print("User logged in")
-                # last stopped here - Maize
                 return True
             else:
                 return False
@@ -348,7 +344,6 @@ class Backend:
 
     def logout(self):
         logout_user()
-        # return redirect()
 
     def get_image(self, img_name):
         """Get specified image public url
