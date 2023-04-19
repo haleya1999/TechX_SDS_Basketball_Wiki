@@ -16,10 +16,21 @@ def make_endpoints(app):
         # to render main.html on the home page.
         return render_template('main.html')
 
+    @app.route('/', methods=['GET','POST'])
+    def search_inputted_text_on_home():
+        text = request.form["text"]
+        print("trying to search")
+        return render_template('pages.html', pages = backend.get_searched_pages(text))
+
     @app.route("/pages")
     def pages():
         pages = backend.get_all_page_names()
         return render_template('pages.html', pages=pages)
+
+    @app.route('/pages', methods=['GET','POST'])
+    def search_inputted_text_on_pages():
+        text = request.form['text']
+        return render_template('pages.html', pages = backend.get_searched_pages(text))
 
     @app.route("/pages/<path:subpath>")
     def get_page(subpath):
@@ -37,8 +48,14 @@ def make_endpoints(app):
                                haley_img=haley,
                                khloe_img=khloe,
                                maize_img=maize)
+    
+    @app.route('/about', methods=['GET','POST'])
+    def search_inputted_text_on_about():
+        text = request.form['text']
+        return render_template('pages.html', pages = backend.get_searched_pages(text))
 
-    @app.route("/upload", methods=['Get', 'POST'])
+
+    @app.route("/upload", methods=['GET','POST'])
     def upload_file():
         if request.method == 'POST':
             allowed_extensions = {"txt", "jpg", "jpeg", "png", "gif"}
@@ -77,6 +94,11 @@ def make_endpoints(app):
         else:
             return render_template('login.html')
 
+    @app.route('/login', methods=['GET','POST'])
+    def search_inputted_text_on_login():
+        text = request.form['text']
+        return render_template('pages.html', pages = backend.get_searched_pages(text))
+
     @app.route("/signup")
     def signup():
         return render_template('signup.html')
@@ -89,6 +111,11 @@ def make_endpoints(app):
             return render_template('main.html')
         else:
             return render_template('signup.html')
+
+    @app.route('/signup', methods=['GET','POST'])
+    def search_inputted_text_on_signup():
+        text = request.form['text']
+        return render_template('pages.html', pages = backend.get_searched_pages(text))
 
     @app.route("/logout")
     def logout():

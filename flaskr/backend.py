@@ -138,7 +138,7 @@ class Backend:
         self.pages_by_category = defaultdict(list)
         self.search_results = []
 
-
+        
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
 
@@ -156,6 +156,35 @@ class Backend:
         """
         self.page = self.content_bucket.blob(name)
         return self.page
+    
+    def get_searched_pages(self, text):
+        self.searched_pages = []
+        bucket_name = "wiki-contents"
+        all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
+        
+        processed_text = text.lower()
+        processed_text.replace("-", " ")
+        text_list = processed_text.split()
+        num_words = len(text_list)
+        search_results_counter = {}
+        search_results = []        
+        for name in text_list:
+            if name in self.pages_by_name:
+                if self.pages_by_name[name][0] in search_results_counter:
+                    search_results_counter[self.pages_by_name[name][0]] += 1
+                else:
+                    search_results_counter[self.pages_by_name[name][0]] = 1
+
+        for page in search_results_counter:
+            if search_results_counter[page] >= num_words:
+                search_results.append(page)
+        
+        for page in all_pages:
+            if page.name in search_results:
+                self.searched_pages.append(page)
+        
+        return self.searched_pages    
+
 
     def get_all_page_names(self):
         """Returns all wiki pages.
@@ -417,27 +446,4 @@ class Backend:
             teams = data[player]['teams']
             for team in teams:
                 self.pages_by_category[team].append(player)
-
-    # def fill_sort_by_category(self):
-    #     """update category dictionary with saved data in GCS
-
-    #     Args:
-    #         self: Instance of the class.
-            
-
-    #     Returns:
-    #         N/A
-    #     Raises:
-    #         N/A
-    #     """
-    #     blob = self.content_bucket.blob('all-players/all_players.pkl')
-    #     with blob.open("rb") as f:
-    #         data = f.read()
-    #     data = pickle.loads(data)
-    #     for player in data:
-    #         self.pages_by_category[data[player]['position']].append(player)
-    #         self.pages_by_category[data[player]['draft_year']].append(player)
-    #         teams = data[player]['teams']
-    #         for team in teams:
-    #             self.pages_by_category[team].append(player)
 

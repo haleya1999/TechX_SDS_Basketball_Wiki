@@ -98,7 +98,8 @@
 
 <!-- removed "and user|length" from conditional below because it caused an error -->
 <div id= "navigation" class="navbar">
-    <a href="/"> Home</a> <a href= "/pages">Pages</a> <a href= "/about">About</a>  {% if current_user and current_user.is_authenticated %} <a href="/"> {{current_user.username}}</a> | <a href="/upload"> Upload</a> <a href= "/logout">Logout</a> {% else %} <a href= "/login">Login</a> <a href= "/signup">Signup</a> {% endif %} <input type="text" placeholder="Search"> <div class="dropdown">
+    <a href="/"> Home</a> <a href= "/pages">Pages</a> <a href= "/about">About</a>  {% if current_user and current_user.is_authenticated %} <a href="/"> {{current_user.username}}</a> <a href="/upload"> Upload</a> <a href= "/logout">Logout</a> {% else %} <a href= "/login">Login</a> <a href= "/signup">Signup</a> {% endif %}
+ <div class="dropdown">
     <button class="dropbtn">Filter
       <i class="fa fa-caret-down"></i>
     </button>
@@ -156,7 +157,9 @@
             <option value="Washington Wizards">Washington Wizards</option>
         </select>
     </div>
-  </div>  
+  </div>
+  <form method="POST"> <input type="text" name="text" placeholder="Search"> <input type="submit" value="Go">
+  </form>    
 </div>
 
 
