@@ -16,8 +16,8 @@ from flask import request, render_template, session, Flask
 import os
 from flask_login import login_user, logout_user
 from datetime import datetime
-from collections import defaultdict
 
+from collections import defaultdict
 
 class User:
 
@@ -55,10 +55,14 @@ class Backend:
     def __init__(self, storage_client=storage.Client(), mock_file=open):
         self.pages = []
         self.myStorageClient = storage_client
-        self.content_bucket = self.myStorageClient.bucket('wiki-contents')
-        self.user_bucket = self.myStorageClient.bucket('users-passwds')
-        self.page = None
-        self.user = User("not-logged-in")
+        if type(self.myStorageClient) == type(storage.Client()):
+            self.content_bucket = self.myStorageClient.bucket('wiki-contents')
+            self.user_bucket = self.myStorageClient.bucket('users-passwds')
+        else:
+            self.content_bucket = self.myStorageClient.bucket['wiki-contents']
+            self.user_bucket = self.myStorageClient.bucket['users-passwds']
+
+        self.user = 0
         self.opener = mock_file
         self.pages_by_name = defaultdict(list)
         self.pages_by_category = {
@@ -83,6 +87,8 @@ class Backend:
         }
         self.full_sort_by_name()
         self.searched_pages = []
+        self.metadata_file = ""
+        self.username = ""
 
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
@@ -182,20 +188,35 @@ class Backend:
         os.remove(source_name)
 
     def create_metadata(self, source_name):
+        '''
+        Creates a metadata file to add to GCS buckets to keep
+        track and update text files metadata.
+
+        Args:
+            self: instance of the class
+            source_name: the name of the text file that was
+            uploaded to the wiki.
+
+        Returns:
+            N/A
+
+        Raises: 
+            N/A
+        '''
         source = source_name.rsplit('.', 1)
-        metadata_file = source[0] + "-metadata"
-        final_file_name = metadata_file + ".txt"
-        print(final_file_name)
-        with open(final_file_name, "w") as f:
-            # author, time, visits,
-            # number of visits
-            # time it was posted
-            visits = 0
-            posted_at = datetime.now()
-            author = self.user.username
-            f.write(f"Author: {author}\n")
-            f.write(f"Posted at: {posted_at}\n")
-            f.write(f"Number of Vists: {visits}\n")
+        final_file_name = f"{source[0]}-metadata.txt"
+        self.metadata_file = final_file_name
+        if self.opener == open:
+            f = self.opener(final_file_name, "w")
+        else:
+            f = self.opener
+        visits = 0
+        posted_at = datetime.now()
+        author = self.username
+        f.write(f"Author: {author}\n")
+        f.write(f"Posted at: {posted_at}\n")
+        f.write(f"Number of Vists: {visits}\n")
+        f.close()
         blob = self.content_bucket.blob("metadata/" + final_file_name)
         generation_match_precondition = 0
         blob.upload_from_filename(
@@ -223,8 +244,9 @@ class Backend:
             if not isinstance(blob, str):
                 f1 = blob.open('wb')
                 f1.write(bytes(m.hexdigest(), 'utf-8'))
-                self.user = User(blob.name)
-                login_user(self.user)
+                user = User(blob.name)
+                self.username = username
+                login_user(user)
                 return True
             else:
                 return True
@@ -257,9 +279,10 @@ class Backend:
                 bytes(n.hexdigest(), 'utf-8').decode('utf-8'))
             print(hashed_input_pword1)
             if password1 == hashed_input_pword1:
-                self.user = User(blob.name)
+                user = User(blob.name)
                 if blob.name != "LeBron James":
-                    login_user(self.user)
+                    login_user(user)
+                    self.username = username
                     print("User logged in")
                 # last stopped here - Maize
                 return True
