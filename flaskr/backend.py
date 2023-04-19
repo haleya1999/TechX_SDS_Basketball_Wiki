@@ -14,11 +14,12 @@ from google.cloud import storage
 import hashlib
 from flask import request, render_template, session, Flask
 import os
+from collections import defaultdict
 from flask_login import login_user, logout_user
 from datetime import datetime
 import ast
 import pickle
-
+from inspect import isfunction
 
 class User:
 
@@ -56,13 +57,13 @@ class Backend:
     def __init__(self, storage_client=storage.Client(), mock_file=open):
         self.pages = []
         self.myStorageClient = storage_client
-        if storage_client == storage.Client():
+        if not isfunction(self.myStorageClient.bucket):
             self.content_bucket = self.myStorageClient.bucket('wiki-contents')
             self.user_bucket = self.myStorageClient.bucket('users-passwds')
         else:
             self.content_bucket = self.myStorageClient.bucket['wiki-contents']
             self.user_bucket = self.myStorageClient.bucket['users-passwds']
-            
+
         self.page = None
         self.user = User("not-logged-in")
         self.opener = mock_file
