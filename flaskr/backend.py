@@ -106,6 +106,7 @@ class Backend:
                 "Washington Wizards": [],               
             },
             'years': {
+                1940: [],
                 1950: [],
                 1960: [],
                 1970: [],
@@ -125,7 +126,6 @@ class Backend:
         }
         
         self.categorize_players()
-        print(self.pages_by_category)
         self.fill_sort_by_name()
         print(self.pages_by_category)
         self.search_results = []
@@ -144,13 +144,18 @@ class Backend:
         Raises:
             N/A
         """
-        all_players_file = self.content_bucket.blob("all-players/all_players.txt")
-        with all_players_file.open("r") as all_players_file:
-                json_dict = all_players_file.read()
-
-        all_players_dict = eval(json_dict.replace("'", "\""))
-        print(all_players_dict)
-        print(type(all_players_dict))
+        players_file = "all-players/all_players.pkl"
+        blob = self.content_bucket.blob(players_file)
+        try:
+            with blob.open("rb") as dictionary:
+                self.all_players = pickle.load(dictionary)    
+        except TypeError as e:
+            raise e              
+        except:
+            self.all_players = {}     
+                    
+        all_players_dict = self.all_players
+        
         for player in all_players_dict:
             if player != "all_players.txt":
                 draft_year = all_players_dict[player]['draft_year']
@@ -193,9 +198,7 @@ class Backend:
         self.searched_pages = []
         bucket_name = "wiki-contents"
         all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
-        if text == "" or " ":
-            self.searched_pages = all_pages
-            return self.searched_pages
+
         processed_text = text.lower()
         processed_text.replace("-", " ")
         text_list = processed_text.split()
@@ -224,7 +227,6 @@ class Backend:
         return self.searched_pages    
 
     def search_by_category(self, valid_pages, selected_position, selected_draft_year, selected_teams):
-        print(valid_pages)
         in_position = set()
         in_draft_year = set()
         in_team = set()  
