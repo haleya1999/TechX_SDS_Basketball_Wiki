@@ -125,6 +125,7 @@ class Backend:
         }
         
         self.categorize_players()
+        print(self.pages_by_category)
         self.fill_sort_by_name()
         print(self.pages_by_category)
         self.search_results = []
@@ -379,7 +380,8 @@ class Backend:
             prefix = "saltymelon"
             n = hashlib.sha256()
             n.update(bytes(prefix + password, 'utf-8'))
-            f1 = blob.open('r')
+            if not isinstance(blob, str):
+                f1 = blob.open('r')
             password1 = str(f1.read())
             hashed_input_pword1 = str(
                 bytes(n.hexdigest(), 'utf-8').decode('utf-8'))
