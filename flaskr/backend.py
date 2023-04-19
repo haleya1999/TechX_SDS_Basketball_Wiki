@@ -73,7 +73,38 @@ class Backend:
         self.pages_by_name = defaultdict(list)
 
         self.pages_by_category = {
-            'teams': {},
+            'teams': {
+                "Atlanta Hawks": [],
+                "Boston Celtics": [],
+                "Brooklyn Nets": [],
+                "Charlotte Hornets": [],
+                "Chicago Bulls": [],
+                "Cleveland Cavaliers": [],
+                "Dallas Mavericks": [],
+                "Denver Nuggets": [],
+                "Detroit Pistons": [],
+                "Golden State Warriors": [],
+                "Houston Rockets": [],
+                "Indiana Pacers": [],
+                "Los Angeles Clippers": [],
+                "Los Angeles Lakers": [],
+                "Memphis Grizzlies": [],
+                "Miami Heat": [],
+                "Milwaukee Bucks": [],
+                "Minnesota Timberwolves": [],
+                "New Orleans Pelicans": [],
+                "New York Knicks": [],
+                "Oklahoma City Thunder": [],
+                "Orlando Magic": [],
+                "Philadelphia 76ers": [],
+                "Phoenix Suns": [],
+                "Portland Trail Blazers": [],
+                "Sacramento Kings": [],
+                "San Antonio Spurs": [],
+                "Toronto Raptors": [],
+                "Utah Jazz": [],
+                "Washington Wizards": [],               
+            },
             'years': {
                 1950: [],
                 1960: [],
@@ -94,11 +125,11 @@ class Backend:
         }
         
         self.categorize_players()
-        print(self.pages_by_category)
         self.fill_sort_by_name()
-
+        print(self.pages_by_category)
         self.search_results = []
         # self.fill_sort_by_category()
+
 
     def categorize_players(self):
         """update category dictionary with saved data in GCS
@@ -161,8 +192,9 @@ class Backend:
         self.searched_pages = []
         bucket_name = "wiki-contents"
         all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
-        print("text:")
-        print(text)
+        if text == "" or " ":
+            self.searched_pages = all_pages
+            return self.searched_pages
         processed_text = text.lower()
         processed_text.replace("-", " ")
         text_list = processed_text.split()
@@ -171,6 +203,8 @@ class Backend:
         search_results = [] 
         print("pages by name")
         print(self.pages_by_name)
+
+        # ensures duplicate pages are not returned
         for name in text_list:
             if name in self.pages_by_name:
                 if self.pages_by_name[name][0] in search_results_counter:
@@ -196,9 +230,9 @@ class Backend:
         for player in valid_pages:
             name = player.name
             name = name[5:]            
-            if selected_position != "all_positions" and name in self.pages_by_category[selected_position]:
+            if selected_position != "all_positions" and name in self.pages_by_category['positions'][selected_position]:
                 in_position.add(player)            
-            if selected_draft_year != "all_decades" and name in self.pages_by_category[selected_draft_year]:
+            if selected_draft_year != "all_decades" and name in self.pages_by_category['years'][int(selected_draft_year)]:
                 in_draft_year.add(player) 
             for team in selected_teams:
                 if selected_teams[0] != "all_teams" and name in self.pages_by_category['teams'][team]:
@@ -212,7 +246,18 @@ class Backend:
             return list(in_position.intersection(in_team))
         elif selected_draft_year != "all_decades" and selected_teams[0] != "all_teams":
             return list(in_draft_year.intersection(in_team))
-        
+        elif selected_position != "all_positions":
+            return list(in_position)
+        elif selected_draft_year != "all_decades":
+            return list(in_draft_year)
+        elif selected_teams[0] != "all_teams":
+            return list(in_team)
+        else:
+            print("12345")
+            pages_without_iterator = []
+            for player in valid_pages:
+                pages_without_iterator.append(player)
+            return pages_without_iterator
 
     def get_all_page_names(self):
         """Returns all wiki pages.
@@ -448,3 +493,24 @@ class Backend:
         for name in names:
             self.pages_by_name[name].append("docs/" + filename)
 
+    def format_page_name(self, filename = None):
+        """Formats filename to readable string containing the file's player name
+
+        Args:
+            self: Instance of the class.
+            filename: .txt file of player
+
+        Returns:
+            String of player's name
+        Raises:
+            N/A
+        """
+        if filename.name:
+            name = filename.name[5:-4]
+            name.replace("-", " ")
+            text_list = name.split()
+            for item in text_list:
+                item[0] = item[0].upper()
+            return text_list.join(" ")                
+        else:
+            return ""
