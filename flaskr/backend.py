@@ -376,8 +376,24 @@ class Backend:
         return blob.public_url
 
 
-    def save_edits(self, filename):
+    def save_edits(self, filename, text):
+        '''
+        This method uploads newly edited wiki page back to GCS buckets.
+
+        Args:
+            self: An instance of the class.
+            filename: The file that is being edited.
+            text: The updated text that goes on the wiki page.
+
+        Returns:
+            N/A
+        
+        Raises:
+            N/A
+        '''
         blob = self.content_bucket.blob(filename)
+        with blob.open("w") as blob:
+            blob.writelines(text)
         blob.upload_from_filename(filename)
     
 
