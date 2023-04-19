@@ -318,6 +318,12 @@ class Backend:
         blob.make_public()
         return blob.public_url
 
+<<<<<<< flaskr/backend.py
+    def save_edits(self, filename):
+        blob = self.content_bucket.blob(filename)
+        blob.upload_from_filename(filename)
+    
+
     def full_sort_by_name(self):
         """fill a dictionary with names and a list of pages from GCS corresponding to each name
 
@@ -359,3 +365,4 @@ class Backend:
 
     def update_categories(self, teams, position, start_year, end_year):
         decade = start_year / 10
+
