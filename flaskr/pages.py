@@ -11,8 +11,6 @@ def make_endpoints(app):
     # go to a specific route on the project's website.
     @app.route("/")
     def home():
-        # TODO(Checkpoint Requirement 2 of 3): Change this to use render_template
-        # to render main.html on the home page.
         return render_template('main.html')
 
     @app.route('/', methods=['POST'])
@@ -36,6 +34,19 @@ def make_endpoints(app):
         with page.open("r") as page:
             data = page.read()
         return render_template('specific-wiki.html', page=subpath, data=data)
+
+    @app.route("/pages/<path:subpath>/edit", methods=['Get', 'POST'])
+    def edits(subpath):
+        if request.method == "POST":
+            form_data = request.form['editor']
+            #change txt file
+            #maybe change metadata
+            pass
+        #get text from page
+        page = backend.get_wiki_page(subpath)
+        with page.open("r") as page:
+            data = page.read()
+        return render_template('editor.html', page=subpath, data=data)
 
     @app.route("/about")
     def about():
@@ -114,5 +125,3 @@ def make_endpoints(app):
     def logout():
         backend.logout()
         return render_template('main.html')
-
-    # TODO(Project 1): Implement additional routes according to the project requirements.
