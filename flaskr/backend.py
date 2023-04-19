@@ -14,8 +14,10 @@ from google.cloud import storage
 import hashlib
 from flask import request, render_template, session, Flask
 import os
+from collections import defaultdict
 from flask_login import login_user, logout_user
 from datetime import datetime
+import ast
 from collections import defaultdict
 import json
 import pickle
@@ -56,8 +58,14 @@ class Backend:
     def __init__(self, storage_client=storage.Client(), mock_file=open):
         self.pages = []
         self.myStorageClient = storage_client
-        self.content_bucket = self.myStorageClient.bucket('wiki-contents')
-        self.user_bucket = self.myStorageClient.bucket('users-passwds')
+
+        print(type(self.myStorageClient))
+        if type(self.myStorageClient) == type(storage.Client()):
+            self.content_bucket = self.myStorageClient.bucket('wiki-contents')
+            self.user_bucket = self.myStorageClient.bucket('users-passwds')
+        else:
+            self.content_bucket = self.myStorageClient.bucket['wiki-contents']
+            self.user_bucket = self.myStorageClient.bucket['users-passwds']
 
         self.page = None
         self.user = User("not-logged-in")
@@ -129,6 +137,7 @@ class Backend:
                              
         self.pages_by_category = defaultdict(list)
         self.search_results = []
+
 
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
@@ -311,6 +320,42 @@ class Backend:
         blob.make_public()
         return blob.public_url
 
+
+    def update_player_metadata(self, filename, position, draft_year, teams):
+        '''
+        Adds player information to universal dictionary of all players uploaded 
+        to the wiki.
+
+        This will be used to conduct categorical searches on the pages uploaded to
+        the wiki.
+
+        Args:
+            self: An instance of the class.
+            filename: Name of the file user uploaded to the wiki.
+            position: Position the player plays that was inputted into HTML form.
+            draft_year: Year player was drafted
+            teams: List of teams player has played on.
+
+        Returns: 
+            N/A
+        '''
+        players_file = "all-players/all_players.pkl"
+        blob = self.content_bucket.blob(players_file)
+        try:
+            with blob.open("rb") as dictionary:
+                self.all_players = pickle.load(dictionary)    
+        except TypeError as e:
+            raise e              
+        except:
+            self.all_players = {}     
+        with blob.open("wb") as dictionary:
+            self.all_players[filename] = {
+                'position': position,
+                'draft_year': draft_year,
+                'teams': teams
+            }
+            pickle.dump(self.all_players, dictionary)
+
     def fill_sort_by_name(self):
         """fill a dictionary with names and a list of pages from GCS corresponding to each name
 
@@ -395,3 +440,4 @@ class Backend:
     #         teams = data[player]['teams']
     #         for team in teams:
     #             self.pages_by_category[team].append(player)
+

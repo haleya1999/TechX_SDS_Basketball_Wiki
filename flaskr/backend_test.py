@@ -1,15 +1,35 @@
+import pytest
 from flaskr.backend import Backend
+from collections import defaultdict
+from unittest.mock import MagicMock, patch, Mock, mock_open
 
 # TODO(Project 1): Write tests for Backend methods.
 
 
 class MockBlob:
 
-    def __init__(self, username):
-        self.name = username
+    def __init__(self):
+        self.name = "LBJ"
 
     def __enter__(self):
         return self
+    
+    def __exit__(self, _1, _2, _3):
+        pass
+
+    def open(self, param):
+        return self          
+
+    def read(self, _):
+        return bytes()
+
+    def readline(self):
+        return bytes()
+
+    def write(self, contents):
+        pass
+
+
 
     def name(self):
         return self.name
@@ -18,10 +38,10 @@ class MockBlob:
 class MockBucket:
 
     def __init__(self):
-        pass
+        self.blobs = defaultdict(MockBlob)
 
     def blob(self, name):
-        return "LBJ"
+        return self.blobs[name]
 
     def image(self, name="test_img"):
         self.name = name
@@ -31,15 +51,18 @@ class MockBucket:
 class MockStorageClient:
 
     def __init__(self):
-        pass
+        self.bucket = defaultdict(MockBucket)
 
     def list_blobs(self, name, prefix=""):
         return ["LeBron James", "Stephen Curry", "Bill Russel", "Larry Bird"]
 
     def bucket(self, bucket_name):
-        mock_bucket = MockBucket()
-        return MockBucket()
+        return self.bucket[bucket_name]
 
+@pytest.fixture
+def open_mock(content):
+    test_file = ""
+    return mock_open(content, test_file)
 
 class mockstorage:
 
@@ -66,7 +89,7 @@ def test_get_wiki_page():
     mock_storage_client = MockStorageClient()
     backend_test = Backend(mock_storage_client)
     page = backend_test.get_wiki_page("blob-name")
-    assert page == "LBJ"
+    assert page.name == "LBJ"
 
 
 def test_get_image():
@@ -83,6 +106,17 @@ def test_get_image():
 
 def test_upload():
     pass
+
+
+def test_update_player_metadata():
+    mock_storage_client = MockStorageClient()
+    backend_test = Backend(mock_storage_client, open_mock)
+    backend_test.update_player_metadata("test.txt", "center", 2012, ["Test Team"])
+    assert backend_test.all_players == {'test.txt': {
+        'position': 'center',
+        'draft_year': 2012,
+        'teams': ['Test Team']
+    }}
 
 
 def test_sort_by_name():
@@ -104,3 +138,4 @@ def test_fill_names():
         'test': ['docs/test-file.txt'],
         'name': ['docs/file-name.txt']
     }
+
