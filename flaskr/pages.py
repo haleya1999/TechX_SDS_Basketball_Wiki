@@ -58,7 +58,7 @@ def make_endpoints(app):
                 teams = request.form.getlist('source')
                 backend.add_to_dict(filename, position, draft_year, teams)
                 return redirect(request.url)
-                
+
         return render_template('uploads.html')
 
     @app.route("/login")

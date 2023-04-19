@@ -130,7 +130,6 @@ class Backend:
                 source_name, if_generation_match=generation_match_precondition)
             self.create_metadata(source_name)
         os.remove(source_name)
-                       
 
     def create_metadata(self, source_name):
         source = source_name.rsplit('.', 1)
@@ -138,24 +137,19 @@ class Backend:
         final_file_name = metadata_file + ".txt"
         print(final_file_name)
         with open(final_file_name, "w") as f:
-           # author, time, visits,
-           # number of visits
-           # time it was posted
-           visits = 0
-           posted_at = datetime.now()
-           author = self.user.username
-           f.write(f"Author: {author}\n")
-           f.write(f"Posted at: {posted_at}\n")
-           f.write(f"Number of Vists: {visits}\n")
+            # author, time, visits,
+            # number of visits
+            # time it was posted
+            visits = 0
+            posted_at = datetime.now()
+            author = self.user.username
+            f.write(f"Author: {author}\n")
+            f.write(f"Posted at: {posted_at}\n")
+            f.write(f"Number of Vists: {visits}\n")
         blob = self.content_bucket.blob("metadata/" + final_file_name)
         generation_match_precondition = 0
-        blob.upload_from_filename(final_file_name, if_generation_match=generation_match_precondition)
-
-
-           
-        
-
-
+        blob.upload_from_filename(
+            final_file_name, if_generation_match=generation_match_precondition)
 
     def sign_up(self, username, password):
         """Uploads file with hashed password into the user_bucket and uses the username as the key.
@@ -249,17 +243,18 @@ class Backend:
         print(blob)
         blob.make_public()
         return blob.public_url
+
     def add_to_dict(self, filename, position, draft_year, teams):
         players_file = "all-players/all_players.txt"
         blob = self.content_bucket.blob(players_file)
         with blob.open("r") as dictionary:
             data = dictionary.read()
-            self.all_players = ast.literal_eval(data)            
+            self.all_players = ast.literal_eval(data)
         with blob.open("w") as dictionary:
             self.all_players[filename] = {
                 'position': position,
                 'draft_year': draft_year,
-                'teams': teams 
+                'teams': teams
             }
             updated_dict = str(self.all_players)
             dictionary.writelines(updated_dict)
@@ -270,6 +265,3 @@ class Backend:
         #     'teams': teams
         # }
         return self
-
-
-
