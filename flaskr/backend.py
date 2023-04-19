@@ -15,7 +15,9 @@ import hashlib
 from flask import request, render_template, session, Flask
 import os
 from flask_login import login_user, logout_user
+from datetime import datetime
 
+from collections import defaultdict
 
 class User:
 
@@ -53,11 +55,40 @@ class Backend:
     def __init__(self, storage_client=storage.Client(), mock_file=open):
         self.pages = []
         self.myStorageClient = storage_client
-        self.content_bucket = self.myStorageClient.bucket('wiki-contents')
-        self.user_bucket = self.myStorageClient.bucket('users-passwds')
-        self.page = None
+        if type(self.myStorageClient) == type(storage.Client()):
+            self.content_bucket = self.myStorageClient.bucket('wiki-contents')
+            self.user_bucket = self.myStorageClient.bucket('users-passwds')
+        else:
+            self.content_bucket = self.myStorageClient.bucket['wiki-contents']
+            self.user_bucket = self.myStorageClient.bucket['users-passwds']
+
         self.user = 0
         self.opener = mock_file
+        self.pages_by_name = defaultdict(list)
+        self.pages_by_category = {
+            'teams': {},
+            'years': {
+                1950: {},
+                1960: {},
+                1970: {},
+                1980: {},
+                1990: {},
+                2000: {},
+                2010: {},
+                2020: {}
+            },
+            'positions': {
+                'center': [],
+                'power forward': [],
+                'small forward': [],
+                'point guard': [],
+                'shooting guard': []
+            }
+        }
+        self.full_sort_by_name()
+        self.searched_pages = []
+        self.metadata_file = ""
+        self.username = ""
 
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
@@ -74,7 +105,6 @@ class Backend:
         Raises:
             N/A
         """
-        bucket_name = "wiki-contents"
         self.page = self.content_bucket.blob(name)
         return self.page
 
@@ -92,11 +122,41 @@ class Backend:
         Raises:
             N/A
         """
+        self.pages = []
         bucket_name = "wiki-contents"
         all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
+        self.pages = []
         for page in all_pages:
             self.pages.append(page)
         return self.pages
+    
+    def get_searched_pages(self, text):
+        self.searched_pages = []
+        bucket_name = "wiki-contents"
+        all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
+        
+        processed_text = text.lower()
+        processed_text.replace("-", " ")
+        text_list = processed_text.split()
+        num_words = len(text_list)
+        search_results_counter = {}
+        search_results = []        
+        for name in text_list:
+            if name in self.pages_by_name:
+                if self.pages_by_name[name][0] in search_results_counter:
+                    search_results_counter[self.pages_by_name[name][0]] += 1
+                else:
+                    search_results_counter[self.pages_by_name[name][0]] = 1
+
+        for page in search_results_counter:
+            if search_results_counter[page] >= num_words:
+                search_results.append(page)
+        
+        for page in all_pages:
+            if page.name in search_results:
+                self.searched_pages.append(page)
+        
+        return self.searched_pages    
 
     def upload(self, source_name):
         """Returns all wiki pages.
@@ -125,7 +185,43 @@ class Backend:
             generation_match_precondition = 0
             blob.upload_from_filename(
                 source_name, if_generation_match=generation_match_precondition)
+            self.create_metadata(source_name)
         os.remove(source_name)
+
+    def create_metadata(self, source_name):
+        '''
+        Creates a metadata file to add to GCS buckets to keep
+        track and update text files metadata.
+
+        Args:
+            self: instance of the class
+            source_name: the name of the text file that was
+            uploaded to the wiki.
+
+        Returns:
+            N/A
+
+        Raises: 
+            N/A
+        '''
+        source = source_name.rsplit('.', 1)
+        final_file_name = f"{source[0]}-metadata.txt"
+        self.metadata_file = final_file_name
+        if self.opener == open:
+            f = self.opener(final_file_name, "w")
+        else:
+            f = self.opener
+        visits = 0
+        posted_at = datetime.now()
+        author = self.username
+        f.write(f"Author: {author}\n")
+        f.write(f"Posted at: {posted_at}\n")
+        f.write(f"Number of Vists: {visits}\n")
+        f.close()
+        blob = self.content_bucket.blob("metadata/" + final_file_name)
+        generation_match_precondition = 0
+        blob.upload_from_filename(
+            final_file_name, if_generation_match=generation_match_precondition)
 
     def sign_up(self, username, password):
         """Uploads file with hashed password into the user_bucket and uses the username as the key.
@@ -150,6 +246,7 @@ class Backend:
                 f1 = blob.open('wb')
                 f1.write(bytes(m.hexdigest(), 'utf-8'))
                 user = User(blob.name)
+                self.username = username
                 login_user(user)
                 return True
             else:
@@ -186,6 +283,7 @@ class Backend:
                 user = User(blob.name)
                 if blob.name != "LeBron James":
                     login_user(user)
+                    self.username = username
                     print("User logged in")
                 # last stopped here - Maize
                 return True
@@ -220,7 +318,51 @@ class Backend:
         blob.make_public()
         return blob.public_url
 
+<<<<<<< flaskr/backend.py
     def save_edits(self, filename):
         blob = self.content_bucket.blob(filename)
         blob.upload_from_filename(filename)
     
+
+    def full_sort_by_name(self):
+        """fill a dictionary with names and a list of pages from GCS corresponding to each name
+
+        Args:
+            self: Instance of the class.
+            
+
+        Returns:
+            N/A
+        Raises:
+            N/A
+        """
+        bucket_name = "wiki-contents"
+        all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
+        for page in all_pages:
+            title = page.name[5:-4]
+            names = title.split('-')
+            for name in names:
+                if name != '':
+                    self.pages_by_name[name].append(page.name)
+
+    def single_sort_by_name(self, filename):
+        """update name dictionary with info from uploaded files
+
+        Args:
+            self: Instance of the class.
+            
+
+        Returns:
+            N/A
+        Raises:
+            N/A
+        """
+        title = filename[:-4]
+        names = title.split('-')
+        for name in names:
+            if name != '':
+                self.pages_by_name[name].append("docs/" + filename)
+
+    def update_categories(self, teams, position, start_year, end_year):
+        decade = start_year / 10
+

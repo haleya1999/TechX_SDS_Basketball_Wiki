@@ -6,18 +6,27 @@ from werkzeug.utils import secure_filename
 
 def make_endpoints(app):
     backend = Backend()
+    backend.full_sort_by_name()
     # Flask uses the "app.route" decorator to call methods when users
     # go to a specific route on the project's website.
     @app.route("/")
     def home():
-        # TODO(Checkpoint Requirement 2 of 3): Change this to use render_template
-        # to render main.html on the home page.
         return render_template('main.html')
 
+    @app.route('/', methods=['POST'])
+    def search_inputted_text_on_home():
+        text = request.form['text']
+        return render_template('pages.html', pages = backend.get_searched_pages(text))
+        
     @app.route("/pages")
     def pages():
         pages = backend.get_all_page_names()
         return render_template('pages.html', pages=pages)
+    
+    @app.route('/pages', methods=['POST'])
+    def search_inputted_text_on_pages():
+        text = request.form['text']
+        return render_template('pages.html', pages = backend.get_searched_pages(text))
 
     @app.route("/pages/<path:subpath>")
     def get_page(subpath):
@@ -37,6 +46,19 @@ def make_endpoints(app):
         data = ""
         return render_template('editor.html', page=subpath, data=data)
 
+    @app.route("/pages/<path:subpath>/edit", methods=['Get', 'POST'])
+    def edits(subpath):
+        if request.method == "POST":
+            form_data = request.form['editor']
+            #change txt file
+            #maybe change metadata
+            pass
+        #get text from page
+        page = backend.get_wiki_page(subpath)
+        with page.open("r") as page:
+            data = page.read()
+        return render_template('editor.html', page=subpath, data=data)
+
     @app.route("/about")
     def about():
         haley = backend.get_image('ironheart.jpg')
@@ -46,6 +68,11 @@ def make_endpoints(app):
                                haley_img=haley,
                                khloe_img=khloe,
                                maize_img=maize)
+
+    @app.route('/about', methods=['POST'])
+    def search_inputted_text_on_about():
+        text = request.form['text']
+        return render_template('pages.html', pages = backend.get_searched_pages(text))
 
     @app.route("/upload", methods=['Get', 'POST'])
     def upload_file():
@@ -61,6 +88,7 @@ def make_endpoints(app):
             if file and file.filename.rsplit(
                     '.', 1)[1].lower() in allowed_extensions:
                 filename = secure_filename(file.filename)
+                backend.single_sort_by_name(filename)
                 file.save(os.path.abspath(filename))
                 backend.upload(file.filename)
                 return redirect(request.url)
@@ -69,6 +97,12 @@ def make_endpoints(app):
     @app.route("/login")
     def login():
         return render_template('login.html')
+    
+    @app.route('/login', methods=['POST'])
+    def search_inputted_text_on_login():
+        text = request.form['text']
+        return render_template('pages.html', pages = backend.get_searched_pages(text))
+
 
     @app.route("/log_in", methods=["Get", "POST"])
     def login_post():
@@ -82,6 +116,12 @@ def make_endpoints(app):
     @app.route("/signup")
     def signup():
         return render_template('signup.html')
+    
+    @app.route('/signup', methods=['POST'])
+    def search_inputted_text_on_signup():
+        text = request.form['text']
+        return render_template('pages.html', pages = backend.get_searched_pages(text))
+
 
     @app.route("/sign_up", methods=["POST"])
     def signup_post():
@@ -96,5 +136,3 @@ def make_endpoints(app):
     def logout():
         backend.logout()
         return render_template('main.html')
-
-    # TODO(Project 1): Implement additional routes according to the project requirements.
