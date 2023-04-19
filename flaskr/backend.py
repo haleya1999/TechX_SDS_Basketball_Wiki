@@ -127,6 +127,8 @@ class Backend:
                         self.pages_by_category['teams'][team].append(player)                             
         print(self.pages_by_category)
                              
+        self.pages_by_category = defaultdict(list)
+        self.search_results = []
 
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.

@@ -6,6 +6,8 @@ from werkzeug.utils import secure_filename
 
 def make_endpoints(app):
     backend = Backend()
+    backend.fill_sort_by_category()
+    backend.fill_sort_by_name()
     # Flask uses the "app.route" decorator to call methods when users
     # go to a specific route on the project's website.
     @app.route("/")
