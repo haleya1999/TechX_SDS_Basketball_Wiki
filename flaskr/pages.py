@@ -65,13 +65,14 @@ def make_endpoints(app):
 
     @app.route("/pages/<path:subpath>/edit", methods=['Get', 'POST'])
     def edits(subpath):
+        page = backend.get_wiki_page(subpath)
         if request.method == "POST":
             form_data = request.form['editor']
-            #change txt file
+            backend.save_edits(page.name, form_data)
             #maybe change metadata
             pass
         #get text from page
-        page = backend.get_wiki_page(subpath)
+        
         with page.open("r") as page:
             data = page.read()
         return render_template('editor.html', page=subpath, data=data)
