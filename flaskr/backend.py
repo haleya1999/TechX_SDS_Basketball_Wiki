@@ -200,6 +200,7 @@ class Backend:
         Raises:
             N/A
         """
+        self.pages = []
         bucket_name = "wiki-contents"
         all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
         for page in all_pages:
