@@ -18,8 +18,9 @@ from collections import defaultdict
 from flask_login import login_user, logout_user
 from datetime import datetime
 import ast
+from collections import defaultdict
+import json
 import pickle
-from inspect import isfunction
 
 class User:
 
@@ -57,6 +58,7 @@ class Backend:
     def __init__(self, storage_client=storage.Client(), mock_file=open):
         self.pages = []
         self.myStorageClient = storage_client
+
         print(type(self.myStorageClient))
         if type(self.myStorageClient) == type(storage.Client()):
             self.content_bucket = self.myStorageClient.bucket('wiki-contents')
@@ -68,7 +70,74 @@ class Backend:
         self.page = None
         self.user = User("not-logged-in")
         self.opener = mock_file
-        self.all_players = {}
+        self.pages_by_name = defaultdict(list)
+
+        self.pages_by_category = {
+            'teams': {},
+            'years': {
+                1950: [],
+                1960: [],
+                1970: [],
+                1980: [],
+                1990: [],
+                2000: [],
+                2010: [],
+                2020: []
+            },
+            'positions': {
+                'center': [],
+                'power-forward': [],
+                'small-forward': [],
+                'point-guard': [],
+                'shooting-guard': []
+            }
+        }
+        
+        self.categorize_players()
+        self.fill_sort_by_name()
+
+        self.search_results = []
+        # self.fill_sort_by_category()
+
+    def categorize_players(self):
+        """update category dictionary with saved data in GCS
+
+        Args:
+            self: Instance of the class.
+            
+
+        Returns:
+            N/A
+        Raises:
+            N/A
+        """
+        all_players_file = self.content_bucket.blob("all-players/all_players.txt")
+        with all_players_file.open("r") as all_players_file:
+                json_dict = all_players_file.read()
+
+        all_players_dict = eval(json_dict.replace("'", "\""))
+        print(all_players_dict)
+        print(type(all_players_dict))
+        for player in all_players_dict:
+            if player != "all_players.txt":
+                draft_year = all_players_dict[player]['draft_year']
+                draft_year = int(draft_year)
+                draft_decade = round((draft_year - 5)/10)*10
+                self.pages_by_category['years'][draft_decade].append(player)
+                
+                position = all_players_dict[player]['position']
+                self.pages_by_category['positions'][position].append(player)
+
+                for team in all_players_dict[player]['teams']:
+                    if team not in self.pages_by_category['teams']:
+                        self.pages_by_category['teams'][team] = [player]
+                    else:
+                        self.pages_by_category['teams'][team].append(player)                             
+        print(self.pages_by_category)
+                             
+        self.pages_by_category = defaultdict(list)
+        self.search_results = []
+
 
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
@@ -85,7 +154,6 @@ class Backend:
         Raises:
             N/A
         """
-        bucket_name = "wiki-contents"
         self.page = self.content_bucket.blob(name)
         return self.page
 
@@ -252,6 +320,7 @@ class Backend:
         blob.make_public()
         return blob.public_url
 
+
     def update_player_metadata(self, filename, position, draft_year, teams):
         '''
         Adds player information to universal dictionary of all players uploaded 
@@ -287,5 +356,88 @@ class Backend:
             }
             pickle.dump(self.all_players, dictionary)
 
+    def fill_sort_by_name(self):
+        """fill a dictionary with names and a list of pages from GCS corresponding to each name
 
+        Args:
+            self: Instance of the class.
+            
+
+        Returns:
+            N/A
+        Raises:
+            N/A
+        """
+        bucket_name = "wiki-contents"
+        all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
+        for page in all_pages:
+            title = page.name[5:-4]
+            names = title.split('-')
+            for name in names:
+                if name != '':
+                    self.pages_by_name[name].append(page.name)
+
+    def update_sort_by_name(self, filename):
+        """update name dictionary with info from uploaded files
+
+        Args:
+            self: Instance of the class.
+            
+
+        Returns:
+            N/A
+        Raises:
+            N/A
+        """
+        #remove file extension from filename
+        title = filename[:-4]
+        names = title.split('-')
+        for name in names:
+            self.pages_by_name[name].append("docs/" + filename)
+
+    def fill_sort_by_category(self):
+        """update category dictionary with saved data in GCS
+
+        Args:
+            self: Instance of the class.
+            
+
+        Returns:
+            N/A
+        Raises:
+            N/A
+        """
+        blob = self.content_bucket.blob('all-players/all_players.pkl')
+        with blob.open("rb") as f:
+            data = f.read()
+        data = pickle.loads(data)
+        for player in data:
+            self.pages_by_category[data[player]['position']].append(player)
+            self.pages_by_category[data[player]['draft_year']].append(player)
+            teams = data[player]['teams']
+            for team in teams:
+                self.pages_by_category[team].append(player)
+
+    # def fill_sort_by_category(self):
+    #     """update category dictionary with saved data in GCS
+
+    #     Args:
+    #         self: Instance of the class.
+            
+
+    #     Returns:
+    #         N/A
+    #     Raises:
+    #         N/A
+    #     """
+    #     blob = self.content_bucket.blob('all-players/all_players.pkl')
+    #     with blob.open("rb") as f:
+    #         data = f.read()
+    #     data = pickle.loads(data)
+    #     for player in data:
+    #         self.pages_by_category[data[player]['position']].append(player)
+    #         self.pages_by_category[data[player]['draft_year']].append(player)
+    #         teams = data[player]['teams']
+    #         for team in teams:
+    #             self.pages_by_category[team].append(player)
 
