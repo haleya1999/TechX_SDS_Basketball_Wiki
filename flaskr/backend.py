@@ -64,6 +64,7 @@ class Backend:
 
         self.user = 0
         self.opener = mock_file
+        self.metadata_page = None
         self.pages_by_name = defaultdict(list)
         self.pages_by_category = {
             'teams': {},
@@ -90,6 +91,7 @@ class Backend:
         self.metadata_file = ""
         self.username = ""
 
+
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
 
@@ -106,6 +108,8 @@ class Backend:
             N/A
         """
         self.page = self.content_bucket.blob(name)
+        metadata_file = f"metadata-{name[5:]}"
+        self.update_metadata(metadata_file)
         return self.page
 
     def get_all_page_names(self):
@@ -189,6 +193,57 @@ class Backend:
         os.remove(source_name)
 
     def create_metadata(self, source_name):
+        source = source_name.rsplit('.', 1)
+        metadata_file = source[0] + "-metadata"
+        final_file_name = metadata_file + ".txt"
+        print(final_file_name)
+        with open(final_file_name, "w") as f:
+           # author, time, visits,
+           # number of visits
+           # time it was posted
+           visits = 0
+           posted_at = datetime.now()
+           author = self.user.username
+           f.write(f"Author: {author}\n")
+           f.write(f"Posted at: {posted_at}\n")
+           f.write(f"Number of Vists: {visits}\n")
+        blob = self.content_bucket.blob("metadata/" + final_file_name)
+        generation_match_precondition = 0
+        blob.upload_from_filename(final_file_name, if_generation_match=generation_match_precondition)
+
+    def update_metadata(self, source_name):
+        '''
+        Updates metadata for specific page.
+
+        Args:
+            self: instance of the class.
+            source_name: name of text file that User clicked on.
+
+        Returns:
+            N/A
+
+        Raises:
+            N/A
+        '''
+        print(source_name)
+        print("gets to metadata")
+        self.metadata_page = self.content_bucket.blob(f"metadata/{source_name}")
+        modified_data = None
+        print(self.metadata_page)
+        with self.metadata_page.open("r") as metadata_page:
+            data = metadata_page.readlines()
+            print(data)
+            visits = data[2]
+            amt_visits = int(visits[-2])
+            amt_visits += 1
+            print(amt_visits)
+            data[2] = f"Number of Vists: {amt_visits}\n"
+            modified_data = data
+        with self.metadata_page.open("w") as metadata_page:
+            metadata_page.writelines(modified_data)
+        blob = self.metadata_page
+        blob.upload_from_filename(source_name)
+
         '''
         Creates a metadata file to add to GCS buckets to keep
         track and update text files metadata.
@@ -200,6 +255,7 @@ class Backend:
 
         Returns:
             N/A
+
 
         Raises: 
             N/A
@@ -223,6 +279,7 @@ class Backend:
         blob.upload_from_filename(
             final_file_name, if_generation_match=generation_match_precondition)
 
+        
     def sign_up(self, username, password):
         """Uploads file with hashed password into the user_bucket and uses the username as the key.
 
@@ -318,7 +375,7 @@ class Backend:
         blob.make_public()
         return blob.public_url
 
-<<<<<<< flaskr/backend.py
+
     def save_edits(self, filename):
         blob = self.content_bucket.blob(filename)
         blob.upload_from_filename(filename)
@@ -365,4 +422,5 @@ class Backend:
 
     def update_categories(self, teams, position, start_year, end_year):
         decade = start_year / 10
+
 
