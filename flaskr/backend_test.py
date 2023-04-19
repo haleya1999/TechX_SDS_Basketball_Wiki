@@ -1,4 +1,5 @@
 import pytest
+import pickle
 from flaskr.backend import Backend
 from collections import defaultdict
 from unittest.mock import MagicMock, patch, Mock, mock_open
@@ -17,7 +18,9 @@ class MockBlob:
     def __exit__(self, _1, _2, _3):
         pass
 
-    def open(self, param):
+    def open(self, param, update=False):
+        if update:
+            pickle.load
         return self          
 
     def read(self, _):
@@ -52,9 +55,11 @@ class MockStorageClient:
 
     def list_blobs(self, name, prefix=""):
         return ["LeBron James", "Stephen Curry", "Bill Russel", "Larry Bird"]
-
+    
     def bucket(self, bucket_name):
         return self.bucket[bucket_name]
+
+
 
 @pytest.fixture
 def open_mock(content):
@@ -96,8 +101,11 @@ def test_update_player_metadata():
     mock_storage_client = MockStorageClient()
     backend_test = Backend(mock_storage_client, open_mock)
     backend_test.update_player_metadata("test.txt", "center", 2012, ["Test Team"])
-    assert backend_test.all_players == {'test.txt': {
+    expected = {'test.txt': {
         'position': 'center',
         'draft_year': 2012,
         'teams': ['Test Team']
     }}
+    blob = mock_storage_client.bucket['wiki-contents'].blob('test.txt')
+    assert backend_test.all_players == expected
+
