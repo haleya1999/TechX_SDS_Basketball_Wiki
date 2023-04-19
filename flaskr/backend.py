@@ -14,11 +14,15 @@ from google.cloud import storage
 import hashlib
 from flask import request, render_template, session, Flask
 import os
+from collections import defaultdict
 from flask_login import login_user, logout_user
 from datetime import datetime
+
+import ast
+from collections import defaultdict
+import json
 import pickle
 
-from collections import defaultdict
 
 class User:
 
@@ -63,36 +67,117 @@ class Backend:
             self.content_bucket = self.myStorageClient.bucket['wiki-contents']
             self.user_bucket = self.myStorageClient.bucket['users-passwds']
 
-        self.user = 0
+        self.page = None
+        self.user = User("not-logged-in")
+        self.username = ''
         self.opener = mock_file
         self.metadata_page = None
         self.pages_by_name = defaultdict(list)
+
         self.pages_by_category = {
-            'teams': {},
+            'teams': {
+                "Atlanta Hawks": [],
+                "Boston Celtics": [],
+                "Brooklyn Nets": [],
+                "Charlotte Hornets": [],
+                "Chicago Bulls": [],
+                "Cleveland Cavaliers": [],
+                "Dallas Mavericks": [],
+                "Denver Nuggets": [],
+                "Detroit Pistons": [],
+                "Golden State Warriors": [],
+                "Houston Rockets": [],
+                "Indiana Pacers": [],
+                "Los Angeles Clippers": [],
+                "Los Angeles Lakers": [],
+                "Memphis Grizzlies": [],
+                "Miami Heat": [],
+                "Milwaukee Bucks": [],
+                "Minnesota Timberwolves": [],
+                "New Orleans Pelicans": [],
+                "New York Knicks": [],
+                "Oklahoma City Thunder": [],
+                "Orlando Magic": [],
+                "Philadelphia 76ers": [],
+                "Phoenix Suns": [],
+                "Portland Trail Blazers": [],
+                "Sacramento Kings": [],
+                "San Antonio Spurs": [],
+                "Toronto Raptors": [],
+                "Utah Jazz": [],
+                "Washington Wizards": [],               
+            },
             'years': {
-                1950: {},
-                1960: {},
-                1970: {},
-                1980: {},
-                1990: {},
-                2000: {},
-                2010: {},
-                2020: {}
+                1940: [],
+                1950: [],
+                1960: [],
+                1970: [],
+                1980: [],
+                1990: [],
+                2000: [],
+                2010: [],
+                2020: []
             },
             'positions': {
                 'center': [],
-                'power forward': [],
-                'small forward': [],
-                'point guard': [],
-                'shooting guard': []
+                'power-forward': [],
+                'small-forward': [],
+                'point-guard': [],
+                'shooting-guard': []
             }
         }
-        self.full_sort_by_name()
-        self.searched_pages = []
-        self.metadata_file = ""
-        self.username = ""
+        
+        self.categorize_players()
+        self.fill_sort_by_name()
+        print(self.pages_by_category)
+        self.search_results = []
+        # self.fill_sort_by_category()
 
 
+    def categorize_players(self):
+        """update category dictionary with saved data in GCS
+
+        Args:
+            self: Instance of the class.
+            
+
+        Returns:
+            N/A
+        Raises:
+            N/A
+        """
+        players_file = "all-players/all_players.pkl"
+        blob = self.content_bucket.blob(players_file)
+        try:
+            with blob.open("rb") as dictionary:
+                self.all_players = pickle.load(dictionary)    
+        except TypeError as e:
+            raise e              
+        except:
+            self.all_players = {}     
+                    
+        all_players_dict = self.all_players
+        
+        for player in all_players_dict:
+            if player != "all_players.txt":
+                draft_year = all_players_dict[player]['draft_year']
+                draft_year = int(draft_year)
+                draft_decade = round((draft_year - 5)/10)*10
+                self.pages_by_category['years'][draft_decade].append(player)
+                
+                position = all_players_dict[player]['position']
+                self.pages_by_category['positions'][position].append(player)
+
+                for team in all_players_dict[player]['teams']:
+                    if team not in self.pages_by_category['teams']:
+                        self.pages_by_category['teams'][team] = [player]
+                    else:
+                        self.pages_by_category['teams'][team].append(player)                             
+                             
+        
+        self.search_results = []
+
+        
     def get_wiki_page(self, name):
         """Fetches specific wiki page from content bucket.
 
@@ -109,9 +194,78 @@ class Backend:
             N/A
         """
         self.page = self.content_bucket.blob(name)
-        metadata_file = f"{name[5:-4]}-metadata.txt"
-        self.update_metadata(metadata_file)
+        if type(self.myStorageClient) == type(storage.Client()):        
+            metadata_file = f"{name[5:-4]}-metadata.txt"
+            self.update_metadata(metadata_file)
         return self.page
+    
+    def get_searched_pages(self, text):
+        self.searched_pages = []
+        bucket_name = "wiki-contents"
+        all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
+
+        processed_text = text.lower()
+        processed_text.replace("-", " ")
+        text_list = processed_text.split()
+        num_words = len(text_list)
+        search_results_counter = {}
+        search_results = [] 
+        print("pages by name")
+        print(self.pages_by_name)
+
+        # ensures duplicate pages are not returned
+        for name in text_list:
+            if name in self.pages_by_name:
+                if self.pages_by_name[name][0] in search_results_counter:
+                    search_results_counter[self.pages_by_name[name][0]] += 1
+                else:
+                    search_results_counter[self.pages_by_name[name][0]] = 1
+
+        for page in search_results_counter:
+            if search_results_counter[page] >= num_words:
+                search_results.append(page)
+        
+        for page in all_pages:
+            if page.name in search_results:
+                self.searched_pages.append(page)
+        print(self.searched_pages)
+        return self.searched_pages    
+
+    def search_by_category(self, valid_pages, selected_position, selected_draft_year, selected_teams):
+        in_position = set()
+        in_draft_year = set()
+        in_team = set()  
+        for player in valid_pages:
+            name = player.name
+            name = name[5:]            
+            if selected_position != "all_positions" and name in self.pages_by_category['positions'][selected_position]:
+                in_position.add(player)            
+            if selected_draft_year != "all_decades" and name in self.pages_by_category['years'][int(selected_draft_year)]:
+                in_draft_year.add(player) 
+            for team in selected_teams:
+                if selected_teams[0] != "all_teams" and name in self.pages_by_category['teams'][team]:
+                    in_team.add(player)
+                    break
+        if selected_position != "all_positions" and selected_draft_year != "all_decades" and selected_teams[0] != "all_teams":
+            return list(in_position.intersection(in_draft_year, in_team))
+        elif selected_position != "all_positions" and selected_draft_year != "all_decades":
+            return list(in_position.intersection(in_draft_year))
+        elif selected_position != "all_positions" and selected_teams[0] != "all_teams":
+            return list(in_position.intersection(in_team))
+        elif selected_draft_year != "all_decades" and selected_teams[0] != "all_teams":
+            return list(in_draft_year.intersection(in_team))
+        elif selected_position != "all_positions":
+            return list(in_position)
+        elif selected_draft_year != "all_decades":
+            return list(in_draft_year)
+        elif selected_teams[0] != "all_teams":
+            return list(in_team)
+        else:
+            print("12345")
+            pages_without_iterator = []
+            for player in valid_pages:
+                pages_without_iterator.append(player)
+            return pages_without_iterator
 
     def get_all_page_names(self):
         """Returns all wiki pages.
@@ -134,34 +288,7 @@ class Backend:
         for page in all_pages:
             self.pages.append(page)
         return self.pages
-    
-    def get_searched_pages(self, text):
-        self.searched_pages = []
-        bucket_name = "wiki-contents"
-        all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
-        
-        processed_text = text.lower()
-        processed_text.replace("-", " ")
-        text_list = processed_text.split()
-        num_words = len(text_list)
-        search_results_counter = {}
-        search_results = []        
-        for name in text_list:
-            if name in self.pages_by_name:
-                if self.pages_by_name[name][0] in search_results_counter:
-                    search_results_counter[self.pages_by_name[name][0]] += 1
-                else:
-                    search_results_counter[self.pages_by_name[name][0]] = 1
-
-        for page in search_results_counter:
-            if search_results_counter[page] >= num_words:
-                search_results.append(page)
-        
-        for page in all_pages:
-            if page.name in search_results:
-                self.searched_pages.append(page)
-        
-        return self.searched_pages    
+       
 
     def upload(self, source_name):
         """Returns all wiki pages.
@@ -254,6 +381,7 @@ class Backend:
         f.close()
         with open(f"{source_name}", "r") as metadata_page:
             data = metadata_page.readlines()
+            print(1)
             print(data)
             visits = data[2]
             amt_visits = int(visits[-2])
@@ -308,7 +436,7 @@ class Backend:
         else:
             return False
 
-    def sign_in(self, username, password):
+    def sign_in(self, username, password, mock_open=open):
         """Finds filename that matches with inputted username and evaluates if the inputted password is correct.
 
         Args:
@@ -327,19 +455,17 @@ class Backend:
             prefix = "saltymelon"
             n = hashlib.sha256()
             n.update(bytes(prefix + password, 'utf-8'))
-            f1 = blob.open('r')
+            if not isinstance(blob, str):
+                f1 = blob.open('r')
             password1 = str(f1.read())
-            print(password1)
             hashed_input_pword1 = str(
                 bytes(n.hexdigest(), 'utf-8').decode('utf-8'))
-            print(hashed_input_pword1)
             if password1 == hashed_input_pword1:
                 user = User(blob.name)
                 if blob.name != "LeBron James":
                     login_user(user)
                     self.username = username
                     print("User logged in")
-                # last stopped here - Maize
                 return True
             else:
                 return False
@@ -348,7 +474,6 @@ class Backend:
 
     def logout(self):
         logout_user()
-        # return redirect()
 
     def get_image(self, img_name):
         """Get specified image public url
@@ -371,70 +496,6 @@ class Backend:
         print(blob)
         blob.make_public()
         return blob.public_url
-
-
-    def save_edits(self, filename, text):
-        '''
-        This method uploads newly edited wiki page back to GCS buckets.
-
-        Args:
-            self: An instance of the class.
-            filename: The file that is being edited.
-            text: The updated text that goes on the wiki page.
-
-        Returns:
-            N/A
-        
-        Raises:
-            N/A
-        '''
-        blob = self.content_bucket.blob(filename)
-        with blob.open("w") as blob:
-            blob.writelines(text)
-        blob.upload_from_filename(filename)
-    
-
-    def full_sort_by_name(self):
-        """fill a dictionary with names and a list of pages from GCS corresponding to each name
-
-        Args:
-            self: Instance of the class.
-            
-
-        Returns:
-            N/A
-        Raises:
-            N/A
-        """
-        bucket_name = "wiki-contents"
-        all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
-        for page in all_pages:
-            title = page.name[5:-4]
-            names = title.split('-')
-            for name in names:
-                if name != '':
-                    self.pages_by_name[name].append(page.name)
-
-    def single_sort_by_name(self, filename):
-        """update name dictionary with info from uploaded files
-
-        Args:
-            self: Instance of the class.
-            
-
-        Returns:
-            N/A
-        Raises:
-            N/A
-        """
-        title = filename[:-4]
-        names = title.split('-')
-        for name in names:
-            if name != '':
-                self.pages_by_name[name].append("docs/" + filename)
-
-    def update_categories(self, teams, position, start_year, end_year):
-        decade = start_year / 10
 
     def update_player_metadata(self, filename, position, draft_year, teams):
         '''
@@ -471,5 +532,121 @@ class Backend:
             }
             pickle.dump(self.all_players, dictionary)
 
+    def save_edits(self, filename, text):
+        '''
+        This method uploads newly edited wiki page back to GCS buckets.
 
+        Args:
+            self: An instance of the class.
+            filename: The file that is being edited.
+            text: The updated text that goes on the wiki page.
+
+        Returns:
+            N/A
+        
+        Raises:
+            N/A
+        '''
+        blob = self.content_bucket.blob(filename)
+        with blob.open("w") as blob:
+            blob.writelines(text)
+        blob.upload_from_filename(filename)
+    
+
+    def fill_sort_by_name(self):
+        """fill a dictionary with names and a list of pages from GCS corresponding to each name
+
+        Args:
+            self: Instance of the class.
+            
+
+        Returns:
+            N/A
+        Raises:
+            N/A
+        """
+        bucket_name = "wiki-contents"
+        all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
+        for page in all_pages:
+            if not isinstance(page, str):
+                title = page.name[5:-4]
+                names = title.split('-')
+                for name in names:
+                    if name != '':
+                        self.pages_by_name[name].append(page.name)
+
+    def update_sort_by_name(self, filename):
+        """update name dictionary with info from uploaded files
+
+        Args:
+            self: Instance of the class.
+            
+
+        Returns:
+            N/A
+        Raises:
+            N/A
+        """
+        #remove file extension from filename
+        title = filename[:-4]
+        names = title.split('-')
+        for name in names:
+            self.pages_by_name[name].append("docs/" + filename)
+
+    def format_page_name(self, filename = None):
+        """Formats filename to readable string containing the file's player name
+
+        Args:
+            self: Instance of the class.
+            filename: .txt file of player
+
+        Returns:
+            String of player's name
+        Raises:
+            N/A
+        """
+        if filename.name:
+            name = filename.name[5:-4]
+            name.replace("-", " ")
+            text_list = name.split()
+            for item in text_list:
+                item[0] = item[0].upper()
+            return text_list.join(" ")                
+        else:
+            return ""
+
+    def update_player_metadata(self, filename, position, draft_year, teams):
+        '''
+        Adds player information to universal dictionary of all players uploaded 
+        to the wiki.
+
+        This will be used to conduct categorical searches on the pages uploaded to
+        the wiki.
+
+        Args:
+            self: An instance of the class.
+            filename: Name of the file user uploaded to the wiki.
+            position: Position the player plays that was inputted into HTML form.
+            draft_year: Year player was drafted
+            teams: List of teams player has played on.
+
+        Returns: 
+            N/A
+        '''
+        players_file = "all-players/all_players.pkl"
+        blob = self.content_bucket.blob(players_file)
+        try:
+            with blob.open("rb") as dictionary:
+                self.all_players = pickle.load(dictionary)    
+        except TypeError as e:
+            raise e              
+        except:
+            self.all_players = {}     
+        with blob.open("wb") as dictionary:
+            self.all_players[filename] = {
+                'position': position,
+                'draft_year': draft_year,
+                'teams': teams
+            }
+            pickle.dump(self.all_players, dictionary)
 

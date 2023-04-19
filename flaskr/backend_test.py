@@ -1,5 +1,7 @@
+import pytest
 from flaskr.backend import Backend
 from collections import defaultdict
+from unittest.mock import MagicMock, patch, Mock, mock_open
 
 # TODO(Project 1): Write tests for Backend methods.
 
@@ -11,18 +13,21 @@ class MockBlob:
 
     def __enter__(self):
         return self
-
+    
     def __exit__(self, _1, _2, _3):
         pass
 
     def open(self, param):
-        return self
+        return self          
 
     def read(self, _):
         return bytes()
 
     def readline(self):
         return bytes()
+    
+    def readlines(self):
+        return "Test String"
 
     def write(self, contents):
         pass
@@ -55,6 +60,21 @@ class MockStorageClient:
     def bucket(self, bucket_name):
         return self.bucket[bucket_name]
 
+@pytest.fixture
+def open_mock(content):
+    test_file = ""
+    return mock_open(content, test_file)
+
+class mockstorage:
+
+    def __init__(self):
+        pass
+
+    def list_blobs(self, source, prefix=""):
+        return [MockBlob("docs/test-file.txt"), MockBlob("docs/file-name.txt")]
+
+    def bucket(self, name):
+        pass
 
 class MockFile:
 
@@ -74,9 +94,8 @@ class MockFile:
     def close(self):
         return self
 
-
 def test_get_all_pages():
-    mock_storage_client = MockStorageClient()
+    mock_storage_client = MockStorageClient()    
     backend_test = Backend(mock_storage_client)
     all_pages = backend_test.get_all_page_names()
     assert all_pages == [
@@ -98,14 +117,34 @@ def test_get_image():
 def test_upload():
     pass
 
+def test_update_player_metadata():
+    mock_storage_client = MockStorageClient()
+    backend_test = Backend(mock_storage_client, open_mock)
+    backend_test.update_player_metadata("test.txt", "center", 2012, ["Test Team"])
+    assert backend_test.all_players == {'test.txt': {
+        'position': 'center',
+        'draft_year': 2012,
+        'teams': ['Test Team']
+    }}
 
 
 def test_sort_by_name():
     mock_storage_client = MockStorageClient()
     backend_test = Backend(mock_storage_client)
-    backend_test.single_sort_by_name("file-name.txt")
+    backend_test.update_sort_by_name("file-name.txt")
     assert backend_test.pages_by_name == {
         'file': ['docs/file-name.txt'],
+        'name': ['docs/file-name.txt']
+    }
+
+
+def test_fill_names():
+    mock_storage_client = mockstorage()
+    backend_test = Backend(mock_storage_client)
+    backend_test.fill_sort_by_name()
+    assert backend_test.pages_by_name == {
+        'file': ['docs/test-file.txt', 'docs/file-name.txt'],
+        'test': ['docs/test-file.txt'],
         'name': ['docs/file-name.txt']
     }
 

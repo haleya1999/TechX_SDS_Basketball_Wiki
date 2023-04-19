@@ -5,51 +5,79 @@
 <head>
     <head>
         <title> {%block page_name %}{% endblock %} </title>
-<style>
-/* Add a black background color to the top navigation bar */
+<style>/* Add a black background color to the top navigation bar */
+        .navbar {
+    overflow: hidden;
+    background-color: #333;
+    font-family: Arial;
+    }
 
-    .topnav {
-      overflow: hidden;
-      background-color: #e9e9e9;
+    /* Links inside the navbar */
+    .navbar a {
+    float: left;
+    font-size: 16px;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
     }
-    
-    /* Style the links inside the navigation bar */
-    .topnav a {
-      float: left;
-      display: block;
-      color: black;
-      text-align: center;
-      padding: 14px 16px;
-      text-decoration: none;
-      font-size: 17px;
-      font-family: Arial, Helvetica, sans-serif;
+
+    /* The dropdown container */
+    .dropdown {
+    float: left;
+    overflow: hidden;
     }
-    
-    /* Change the color of links on hover */
-    .topnav a:hover {
-      background-color: #ddd;
-      color: black;
+
+    /* Dropdown button */
+    .dropdown .dropbtn {
+    font-size: 16px; 
+    border: none;
+    outline: none;
+    color: white;
+    padding: 14px 16px;
+    background-color: inherit;
+    font-family: inherit; /* Important for vertical align on mobile phones */
+    margin: 0; /* Important for vertical align on mobile phones */
     }
-    
-    /* Style the "active" element to highlight the current page */
-    .topnav a.active {
-      background-color: #2196F3;
-      color: white;
+
+    /* Add a red background color to navbar links on hover */
+    .navbar a:hover, .dropdown:hover .dropbtn {
+    background-color: red;
     }
-    
-    /* Style the search box inside the navigation bar */
-    .topnav input[name=text], .topnav input[type=submit] {
-      float: right;
-      padding: 6px;
-      border: none;
-      margin-top: 8px;
-      margin-right: 16px;
-      font-size: 17px;
+
+    /* Dropdown content (hidden by default) */
+    .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    }
+
+    /* Links inside the dropdown */
+    .dropdown-content a {
+    float: none;
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+    }
+
+    /* Add a grey background color to dropdown links on hover */
+    .dropdown-content a:hover {
+    background-color: #ddd;
+    }
+
+    /* Show the dropdown menu on hover */
+    .dropdown:hover .dropdown-content {
+    display: block;
     }
     
     /* When the screen is less than 600px wide, stack the links and the search field vertically instead of horizontally */
     @media screen and (max-width: 600px) {
-      .topnav a, .topnav input[name=text], .topnav input[type=submit] {
+      .navbar a, .topnav input[type=text] {
         float: none;
         display: block;
         text-align: left;
@@ -57,7 +85,7 @@
         margin: 0;
         padding: 14px;
       }
-      .topnav input[name=text], .topnav input[type=submit] {
+      .navbar input[type=text] {
         border: 1px solid #ccc;
       }
     }
@@ -71,12 +99,76 @@
 <!--If logged in pass user = 'username' to any page that extends main-->
 
 <!-- removed "and user|length" from conditional below because it caused an error -->
-<div id= "navigation" class="topnav">
-    <a href="/"> Home</a> <a href= "/pages">Pages</a> <a href= "/about">About</a>  {% if current_user and current_user.is_authenticated %} {{current_user.username}} | <a href="/upload"> Upload</a> <a href= "/logout">Logout</a> {% else %} <a href= "/login">Login</a> <a href= "/signup">Signup</a> <form method="POST">
-        <input name="text" placeholder="Search">
-        <input type="submit" value="Go">
-    </form> {% endif %}
+<div id= "navigation" class="navbar">
+    <a href="/"> Home</a> <a href= "/pages">Pages</a> <a href= "/about">About</a>  {% if current_user and current_user.is_authenticated %} <a href="/"> {{current_user.username}}</a> <a href="/upload"> Upload</a> <a href= "/logout">Logout</a> {% else %} <a href= "/login">Login</a> <a href= "/signup">Signup</a> {% endif %}
+ <div class="dropdown">
+    <button class="dropbtn">Filter
+      <i class="fa fa-caret-down"></i>
+    </button>
+    
+    <div class="dropdown-content" name = "filter" size="2">
+        <form action="/" method="POST">
+        <select name="position" id="position">
+            <option value="all_positions" selected="selected">Position</option>
+            <option value="point-guard">Point Guard</option>
+            <option value="shooting-guard">Shooting Guard</option>
+            <option value="small-forward">Small Forward</option>
+            <option value="power-forward">Power Forward</option>
+            <option value="center">Center</option>
+        </select>
+        <select name="decade" id="decade" size="2">
+            <option value="all_decades" selected="selected">Draft Decade</option>
+            <option value="1940">1940</option>
+            <option value="1950">1950</option>
+            <option value="1960">1960</option>
+            <option value="1970">1970</option>
+            <option value="1980">1980</option>
+            <option value="1990">1990</option>
+            <option value="2000">2000</option>
+            <option value="2010">2010</option>
+            <option value="2020">2020</option>
+        </select>
+        <select name="team" id="team" size="2" multiple >
+            <option value="all_teams" selected="selected">Team(s)</option>
+            <option value="Atlanta Hawks">Atlanta Hawks</option>
+            <option value="Boston Celtics">Boston Celtics</option>
+            <option value="Brooklyn Nets">Brooklyn Nets</option>
+            <option value="Charlotte Hornets">Charlotte Hornets</option>
+            <option value="Chicago Bulls">Chicago Bulls</option>
+            <option value="Cleveland Cavaliers">Cleveland Cavaliers</option>
+            <option value="Dallas Mavericks">Dallas Mavericks</option>
+            <option value="Denver Nuggets">Denver Nuggets</option>
+            <option value="Detroit Pistons">Detroit Pistons</option>
+            <option value="Golden State Warriors">Golden State Warriors</option>
+            <option value="Houston Rockets">Houston Rockets</option>
+            <option value="Indiana Pacers">Indiana Pacers</option>
+            <option value="Los Angeles Clippers">Los Angeles Clippers</option>
+            <option value="Los Angeles Lakers">Los Angeles Lakers</option>
+            <option value="Memphis Grizzlies">Memphis Grizzlies</option>
+            <option value="Miami Heat">Miami Heat</option>
+            <option value="Milwaukee Bucks">Milwaukee Bucks</option>
+            <option value="Minnesota Timberwolves">Minnesota Timberwolves</option>
+            <option value="New Orleans Pelicans">New Orleans Pelicans</option>
+            <option value="New York Knicks">New York Knicks</option>
+            <option value="Oklahoma City Thunder">Oklahoma City Thunder</option>
+            <option value="Orlando Magic">Orlando Magic</option>
+            <option value="Philadelphia 76ers">Philadelphia 76ers</option>
+            <option value="Phoenix Suns">Phoenix Suns</option>
+            <option value="Portland Trail Blazers">Portland Trail Blazers</option>
+            <option value="Sacramento Kings">Sacramento Kings</option>
+            <option value="San Antonio Spurs">San Antonio Spurs</option>
+            <option value="Toronto Raptors">Toronto Raptors</option>
+            <option value="Utah Jazz">Utah Jazz</option>
+            <option value="Washington Wizards">Washington Wizards</option>
+        </select>
+        <input type="submit" value="Apply Filters">
+    </div>
+  </div>
+  <input type="text" name="text" placeholder="Search"> <input type="submit" value="Go">
+  </form>    
 </div>
+
+
 {% endblock %}
 
 {% block content %}{% endblock %}

@@ -6,27 +6,44 @@ from werkzeug.utils import secure_filename
 
 def make_endpoints(app):
     backend = Backend()
-    backend.full_sort_by_name()
+    backend.categorize_players()
+    backend.fill_sort_by_name()
     # Flask uses the "app.route" decorator to call methods when users
     # go to a specific route on the project's website.
     @app.route("/")
     def home():
         return render_template('main.html')
 
-    @app.route('/', methods=['POST'])
+    @app.route('/', methods=['GET','POST'])
     def search_inputted_text_on_home():
-        text = request.form['text']
-        return render_template('pages.html', pages = backend.get_searched_pages(text))
-        
+        text = request.form["text"]
+        selected_position = request.form['position']
+        selected_draft_year = request.form['decade']
+        selected_teams = request.form.getlist('team')
+        pages = backend.get_searched_pages(text)
+        print(pages)
+        print(selected_position)
+        print(selected_draft_year)
+        print(selected_teams)
+        return render_template('pages.html', pages = backend.search_by_category(backend.get_searched_pages(text), selected_position, selected_draft_year, selected_teams))
+
     @app.route("/pages")
     def pages():
         pages = backend.get_all_page_names()
         return render_template('pages.html', pages=pages)
-    
-    @app.route('/pages', methods=['POST'])
+
+    @app.route('/pages', methods=['GET','POST'])
     def search_inputted_text_on_pages():
         text = request.form['text']
-        return render_template('pages.html', pages = backend.get_searched_pages(text))
+        selected_position = request.form['position']
+        selected_draft_year = request.form['decade']
+        selected_teams = request.form.getlist('team')
+        pages = backend.get_searched_pages(text)
+        print(pages)
+        print(selected_position)
+        print(selected_draft_year)
+        print(selected_teams)
+        return render_template('pages.html', pages = backend.search_by_category(backend.get_searched_pages(text), selected_position, selected_draft_year, selected_teams))
 
     @app.route("/pages/<path:subpath>")
     def get_page(subpath):
@@ -68,11 +85,19 @@ def make_endpoints(app):
                                haley_img=haley,
                                khloe_img=khloe,
                                maize_img=maize)
-
-    @app.route('/about', methods=['POST'])
+    
+    @app.route('/about', methods=['GET','POST'])
     def search_inputted_text_on_about():
         text = request.form['text']
-        return render_template('pages.html', pages = backend.get_searched_pages(text))
+        selected_position = request.form['position']
+        selected_draft_year = request.form['decade']
+        selected_teams = request.form.getlist('team')
+        pages = backend.get_searched_pages(text)
+        print(pages)
+        print(selected_position)
+        print(selected_draft_year)
+        print(selected_teams)
+        return render_template('pages.html', pages = backend.search_by_category(backend.get_searched_pages(text), selected_position, selected_draft_year, selected_teams))
 
     @app.route("/upload", methods=['Get', 'POST'])
     def upload_file():
@@ -88,7 +113,7 @@ def make_endpoints(app):
             if file and file.filename.rsplit(
                     '.', 1)[1].lower() in allowed_extensions:
                 filename = secure_filename(file.filename)
-                backend.single_sort_by_name(filename)
+                backend.update_sort_by_name(filename)
                 file.save(os.path.abspath(filename))
                 backend.upload(file.filename)
                 #saving data for dictionary
@@ -104,12 +129,6 @@ def make_endpoints(app):
     @app.route("/login")
     def login():
         return render_template('login.html')
-    
-    @app.route('/login', methods=['POST'])
-    def search_inputted_text_on_login():
-        text = request.form['text']
-        return render_template('pages.html', pages = backend.get_searched_pages(text))
-
 
     @app.route("/log_in", methods=["Get", "POST"])
     def login_post():
@@ -120,15 +139,22 @@ def make_endpoints(app):
         else:
             return render_template('login.html')
 
+    @app.route('/login', methods=['GET','POST'])
+    def search_inputted_text_on_login():
+        text = request.form['text']
+        selected_position = request.form['position']
+        selected_draft_year = request.form['decade']
+        selected_teams = request.form.getlist('team')
+        pages = backend.get_searched_pages(text)
+        print(pages)
+        print(selected_position)
+        print(selected_draft_year)
+        print(selected_teams)
+        return render_template('pages.html', pages = backend.search_by_category(backend.get_searched_pages(text), selected_position, selected_draft_year, selected_teams))
+
     @app.route("/signup")
     def signup():
         return render_template('signup.html')
-    
-    @app.route('/signup', methods=['POST'])
-    def search_inputted_text_on_signup():
-        text = request.form['text']
-        return render_template('pages.html', pages = backend.get_searched_pages(text))
-
 
     @app.route("/sign_up", methods=["POST"])
     def signup_post():
@@ -138,6 +164,19 @@ def make_endpoints(app):
             return render_template('main.html')
         else:
             return render_template('signup.html')
+
+    @app.route('/signup', methods=['GET','POST'])
+    def search_inputted_text_on_signup():
+        text = request.form['text']
+        selected_position = request.form['position']
+        selected_draft_year = request.form['decade']
+        selected_teams = request.form.getlist('team')
+        pages = backend.get_searched_pages(text)
+        print(pages)
+        print(selected_position)
+        print(selected_draft_year)
+        print(selected_teams)
+        return render_template('pages.html', pages = backend.search_by_category(backend.get_searched_pages(text), selected_position, selected_draft_year, selected_teams))
 
     @app.route("/logout")
     def logout():
