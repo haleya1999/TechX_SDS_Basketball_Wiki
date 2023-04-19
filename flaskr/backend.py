@@ -125,6 +125,7 @@ class Backend:
         self.pages = []
         bucket_name = "wiki-contents"
         all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
+        self.pages = []
         for page in all_pages:
             self.pages.append(page)
         return self.pages
