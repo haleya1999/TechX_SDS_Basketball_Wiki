@@ -11,12 +11,12 @@ class MockBlob:
 
     def __enter__(self):
         return self
-    
+
     def __exit__(self, _1, _2, _3):
         pass
 
     def open(self, param):
-        return self          
+        return self
 
     def read(self, _):
         return bytes()
@@ -56,15 +56,15 @@ class MockStorageClient:
         return self.bucket[bucket_name]
 
 
-
 class MockFile:
-    def __init__(self, filename, param) :
+
+    def __init__(self, filename, param):
         self.content = ""
         self.filename = ""
 
     def open(self):
         pass
-    
+
     def set_filename(self, name):
         self.filename = name
 
@@ -73,7 +73,6 @@ class MockFile:
 
     def close(self):
         return self
-    
 
 
 def test_get_all_pages():
@@ -95,8 +94,10 @@ def test_get_wiki_page():
 def test_get_image():
     pass
 
+
 def test_upload():
     pass
+
 
 def test_create_metadata():
     test_file = MockFile("test_file.txt", "")

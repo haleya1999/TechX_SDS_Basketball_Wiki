@@ -134,7 +134,6 @@ class Backend:
                 source_name, if_generation_match=generation_match_precondition)
             self.create_metadata(source_name)
         os.remove(source_name)
-                       
 
     def create_metadata(self, source_name):
         '''
@@ -168,7 +167,8 @@ class Backend:
         f.close()
         blob = self.content_bucket.blob("metadata/" + final_file_name)
         generation_match_precondition = 0
-        blob.upload_from_filename(final_file_name, if_generation_match=generation_match_precondition)
+        blob.upload_from_filename(
+            final_file_name, if_generation_match=generation_match_precondition)
 
     def sign_up(self, username, password):
         """Uploads file with hashed password into the user_bucket and uses the username as the key.
