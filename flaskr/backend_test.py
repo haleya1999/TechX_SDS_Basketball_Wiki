@@ -11,6 +11,9 @@ class MockBlob:
     def __enter__(self):
         return self
 
+    def name(self):
+        return self.name
+
 
 class MockBucket:
 
@@ -36,6 +39,18 @@ class MockStorageClient:
     def bucket(self, bucket_name):
         mock_bucket = MockBucket()
         return MockBucket()
+
+
+class mockstorage:
+
+    def __init__(self):
+        pass
+
+    def list_blobs(self, source, prefix=""):
+        return [MockBlob("docs/test-file.txt"), MockBlob("docs/file-name.txt")]
+
+    def bucket(self, name):
+        pass
 
 
 def test_get_all_pages():
@@ -68,3 +83,24 @@ def test_get_image():
 
 def test_upload():
     pass
+
+
+def test_sort_by_name():
+    mock_storage_client = MockStorageClient()
+    backend_test = Backend(mock_storage_client)
+    backend_test.update_sort_by_name("file-name.txt")
+    assert backend_test.pages_by_name == {
+        'file': ['docs/file-name.txt'],
+        'name': ['docs/file-name.txt']
+    }
+
+
+def test_fill_names():
+    mock_storage_client = mockstorage()
+    backend_test = Backend(mock_storage_client)
+    backend_test.fill_sort_by_name()
+    assert backend_test.pages_by_name == {
+        'file': ['docs/test-file.txt', 'docs/file-name.txt'],
+        'test': ['docs/test-file.txt'],
+        'name': ['docs/file-name.txt']
+    }
