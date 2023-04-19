@@ -371,35 +371,18 @@ class Backend:
         Raises:
             N/A
         '''
-        print(source_name)
-        print("gets to metadata")
         self.metadata_page = self.content_bucket.get_blob(f"metadata/{source_name}")
         modified_data = ""
-        print(self.metadata_page)
         f = open(f"{source_name}", "w") 
         self.metadata_page.download_to_filename(f"{source_name}")
         f.close()
         with open(f"{source_name}", "r") as metadata_page:
             data = metadata_page.readlines()
-            print(1)
-            print(data)
             visits = data[2]
             amt_visits = int(visits[-2])
             amt_visits += 1
-            print(amt_visits)
             data[2] = f"Number of Vists: {amt_visits}\n"
-            modified_data = modified_data.join(data)
-            print(modified_data)            
-        # with self.metadata_page.open("r") as metadata_page:
-        #     data = metadata_page.readlines()
-        #     print(data)
-        #     visits = data[2]
-        #     amt_visits = int(visits[-2])
-        #     amt_visits += 1
-        #     print(amt_visits)
-        #     data[2] = f"Number of Vists: {amt_visits}\n"
-        #     modified_data = modified_data.join(data)
-        #     print(modified_data)
+            modified_data = modified_data.join(data)         
         with open(f"{source_name}", "w") as metadata_page:
             metadata_page.writelines(modified_data)
         self.metadata_page.upload_from_filename(f"{source_name}")
