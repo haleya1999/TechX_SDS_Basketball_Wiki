@@ -103,16 +103,18 @@
     <button class="dropbtn">Filter
       <i class="fa fa-caret-down"></i>
     </button>
-    <div class="dropdown-content">
+    
+    <div class="dropdown-content" name = "filter" size="2">
+        <form action="/" method="POST">
         <select name="position" id="position">
             <option value="all_positions">Position</option>
-            <option value="point_guard">Point Guard</option>
-            <option value="shooting_guard">Shooting Guard</option>
-            <option value="small_forward">Small Forward</option>
-            <option value="power_forward">Power Forward</option>
+            <option value="point-guard">Point Guard</option>
+            <option value="shooting-guard">Shooting Guard</option>
+            <option value="small-forward">Small Forward</option>
+            <option value="power-forward">Power Forward</option>
             <option value="center">Center</option>
         </select>
-        <select name="decade" id="position">
+        <select name="decade" id="decade" size="2">
             <option value="all_decades">Draft Decade</option>
             <option value="1950">1950</option>
             <option value="1960">1960</option>
@@ -123,7 +125,7 @@
             <option value="2010">2010</option>
             <option value="2020">2020</option>
         </select>
-        <select name="team" id="team" multiple>
+        <select name="team" id="team" size="2" multiple >
             <option value="all_decades">Team(s)</option>
             <option value="Atlanta Hawks">Atlanta Hawks</option>
             <option value="Boston Celtics">Boston Celtics</option>
@@ -156,9 +158,10 @@
             <option value="Utah Jazz">Utah Jazz</option>
             <option value="Washington Wizards">Washington Wizards</option>
         </select>
+        <input type="submit" value="Apply Filters" />
     </div>
   </div>
-  <form method="POST"> <input type="text" name="text" placeholder="Search"> <input type="submit" value="Go">
+  <input type="text" name="text" placeholder="Search"> <input type="submit" value="Go">
   </form>    
 </div>
 

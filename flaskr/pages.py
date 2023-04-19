@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 
 def make_endpoints(app):
     backend = Backend()
-    backend.fill_sort_by_category()
+    backend.categorize_players()
     backend.fill_sort_by_name()
     # Flask uses the "app.route" decorator to call methods when users
     # go to a specific route on the project's website.
@@ -19,7 +19,8 @@ def make_endpoints(app):
     @app.route('/', methods=['GET','POST'])
     def search_inputted_text_on_home():
         text = request.form["text"]
-        print("trying to search")
+        position = request.form['position']
+        print(position)
         return render_template('pages.html', pages = backend.get_searched_pages(text))
 
     @app.route("/pages")
@@ -30,7 +31,7 @@ def make_endpoints(app):
     @app.route('/pages', methods=['GET','POST'])
     def search_inputted_text_on_pages():
         text = request.form['text']
-        return render_template('pages.html', pages = backend.get_searched_pages(text))
+        return render_template('pages.html', pages = backend.search_by_category(backend.get_searched_pages(text)))
 
     @app.route("/pages/<path:subpath>")
     def get_page(subpath):
@@ -52,7 +53,7 @@ def make_endpoints(app):
     @app.route('/about', methods=['GET','POST'])
     def search_inputted_text_on_about():
         text = request.form['text']
-        return render_template('pages.html', pages = backend.get_searched_pages(text))
+        return render_template('pages.html', pages = backend.search_by_category(backend.get_searched_pages(text)))
 
 
     @app.route("/upload", methods=['GET','POST'])
@@ -97,7 +98,7 @@ def make_endpoints(app):
     @app.route('/login', methods=['GET','POST'])
     def search_inputted_text_on_login():
         text = request.form['text']
-        return render_template('pages.html', pages = backend.get_searched_pages(text))
+        return render_template('pages.html', pages = backend.search_by_category(backend.get_searched_pages(text)))
 
     @app.route("/signup")
     def signup():
@@ -115,7 +116,7 @@ def make_endpoints(app):
     @app.route('/signup', methods=['GET','POST'])
     def search_inputted_text_on_signup():
         text = request.form['text']
-        return render_template('pages.html', pages = backend.get_searched_pages(text))
+        return render_template('pages.html', pages = backend.search_by_category(backend.get_searched_pages(text)))
 
     @app.route("/logout")
     def logout():
