@@ -19,7 +19,7 @@ def create_app(test_config=None):
 
     @login_manager.user_loader
     def load_user(user_id):
-        return
+        return User(user_id)
 
     # This is the default secret key used for login sessions
     # By default the dev environment uses the key 'dev'
