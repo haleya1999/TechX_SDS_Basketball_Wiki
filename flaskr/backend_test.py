@@ -99,6 +99,16 @@ def test_upload():
     pass
 
 
+
+def test_sort_by_name():
+    mock_storage_client = MockStorageClient()
+    backend_test = Backend(mock_storage_client)
+    backend_test.single_sort_by_name("file-name.txt")
+    assert backend_test.pages_by_name == {
+        'file': ['docs/file-name.txt'],
+        'name': ['docs/file-name.txt']
+    }
+
 def test_create_metadata():
     test_file = MockFile("test_file.txt", "")
     mock_storage_client = MockStorageClient()
@@ -106,3 +116,4 @@ def test_create_metadata():
     backend.create_metadata("test_file")
     assert backend.metadata_file == "test_file-metadata.txt"
     assert test_file.content == "Number of Vists: 0\n"
+

@@ -16,8 +16,8 @@ from flask import request, render_template, session, Flask
 import os
 from flask_login import login_user, logout_user
 from datetime import datetime
-from inspect import isfunction
 
+from collections import defaultdict
 
 class User:
 
@@ -64,6 +64,29 @@ class Backend:
 
         self.user = 0
         self.opener = mock_file
+        self.pages_by_name = defaultdict(list)
+        self.pages_by_category = {
+            'teams': {},
+            'years': {
+                1950: {},
+                1960: {},
+                1970: {},
+                1980: {},
+                1990: {},
+                2000: {},
+                2010: {},
+                2020: {}
+            },
+            'positions': {
+                'center': [],
+                'power forward': [],
+                'small forward': [],
+                'point guard': [],
+                'shooting guard': []
+            }
+        }
+        self.full_sort_by_name()
+        self.searched_pages = []
         self.metadata_file = ""
         self.username = ""
 
@@ -82,7 +105,6 @@ class Backend:
         Raises:
             N/A
         """
-        bucket_name = "wiki-contents"
         self.page = self.content_bucket.blob(name)
         return self.page
 
@@ -100,11 +122,40 @@ class Backend:
         Raises:
             N/A
         """
+        self.pages = []
         bucket_name = "wiki-contents"
         all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
         for page in all_pages:
             self.pages.append(page)
         return self.pages
+    
+    def get_searched_pages(self, text):
+        self.searched_pages = []
+        bucket_name = "wiki-contents"
+        all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
+        
+        processed_text = text.lower()
+        processed_text.replace("-", " ")
+        text_list = processed_text.split()
+        num_words = len(text_list)
+        search_results_counter = {}
+        search_results = []        
+        for name in text_list:
+            if name in self.pages_by_name:
+                if self.pages_by_name[name][0] in search_results_counter:
+                    search_results_counter[self.pages_by_name[name][0]] += 1
+                else:
+                    search_results_counter[self.pages_by_name[name][0]] = 1
+
+        for page in search_results_counter:
+            if search_results_counter[page] >= num_words:
+                search_results.append(page)
+        
+        for page in all_pages:
+            if page.name in search_results:
+                self.searched_pages.append(page)
+        
+        return self.searched_pages    
 
     def upload(self, source_name):
         """Returns all wiki pages.
@@ -265,3 +316,45 @@ class Backend:
         print(blob)
         blob.make_public()
         return blob.public_url
+
+    def full_sort_by_name(self):
+        """fill a dictionary with names and a list of pages from GCS corresponding to each name
+
+        Args:
+            self: Instance of the class.
+            
+
+        Returns:
+            N/A
+        Raises:
+            N/A
+        """
+        bucket_name = "wiki-contents"
+        all_pages = self.myStorageClient.list_blobs(bucket_name, prefix="docs/")
+        for page in all_pages:
+            title = page.name[5:-4]
+            names = title.split('-')
+            for name in names:
+                if name != '':
+                    self.pages_by_name[name].append(page.name)
+
+    def single_sort_by_name(self, filename):
+        """update name dictionary with info from uploaded files
+
+        Args:
+            self: Instance of the class.
+            
+
+        Returns:
+            N/A
+        Raises:
+            N/A
+        """
+        title = filename[:-4]
+        names = title.split('-')
+        for name in names:
+            if name != '':
+                self.pages_by_name[name].append("docs/" + filename)
+
+    def update_categories(self, teams, position, start_year, end_year):
+        decade = start_year / 10
