@@ -1,4 +1,4 @@
-from flaskr.backend import Backend
+from flaskr.backend import User
 import pytest
 from unittest.mock import MagicMock, patch, Mock, mock_open
 from flask_login import LoginManager

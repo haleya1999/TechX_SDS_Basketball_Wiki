@@ -35,16 +35,16 @@ def make_endpoints(app):
             data = page.read()
         return render_template('specific-wiki.html', page=subpath, data=data)
     
-    @app.route("/pages/<path:subpath>/edit", methods=['Get', 'POST'])
-    def edits(subpath):
-        if request.method == "POST":
-            form_data = request.form['editor']
-            #change txt file
-            #maybe change metadata
-            pass
-        #get text from page
-        data = ""
-        return render_template('editor.html', page=subpath, data=data)
+    # @app.route("/pages/<path:subpath>/edit", methods=['Get', 'POST'])
+    # def edits(subpath):
+    #     if request.method == "POST":
+    #         form_data = request.form['editor']
+    #         #change txt file
+    #         #maybe change metadata
+    #         pass
+    #     #get text from page
+    #     data = ""
+    #     return render_template('editor.html', page=subpath, data=data)
 
     @app.route("/pages/<path:subpath>/edit", methods=['Get', 'POST'])
     def edits(subpath):
@@ -91,8 +91,15 @@ def make_endpoints(app):
                 backend.single_sort_by_name(filename)
                 file.save(os.path.abspath(filename))
                 backend.upload(file.filename)
+                #saving data for dictionary
+                position = request.form['position']
+                draft_year = request.form['years']
+                teams = request.form.getlist('source')
+                backend.update_player_metadata(filename, position, draft_year, teams)
                 return redirect(request.url)
+
         return render_template('uploads.html')
+
 
     @app.route("/login")
     def login():
