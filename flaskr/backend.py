@@ -533,7 +533,6 @@ class Backend:
         blob = self.content_bucket.blob(filename)
         with blob.open("w") as blob:
             blob.writelines(text)
-        blob.upload_from_filename(filename)
     
 
     def fill_sort_by_name(self):
