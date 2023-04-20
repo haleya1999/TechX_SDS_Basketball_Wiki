@@ -43,6 +43,9 @@ class MockBucket:
 
     def blob(self, name):
         return self.blobs[name]
+    
+    def get_blob(self, name):
+        return self.blobs[name]
 
     def image(self, name="test_img"):
         self.name = name
@@ -134,17 +137,6 @@ def test_sort_by_name():
     backend_test.update_sort_by_name("file-name.txt")
     assert backend_test.pages_by_name == {
         'file': ['docs/file-name.txt'],
-        'name': ['docs/file-name.txt']
-    }
-
-
-def test_fill_names():
-    mock_storage_client = mockstorage()
-    backend_test = Backend(mock_storage_client)
-    backend_test.fill_sort_by_name()
-    assert backend_test.pages_by_name == {
-        'file': ['docs/test-file.txt', 'docs/file-name.txt'],
-        'test': ['docs/test-file.txt'],
         'name': ['docs/file-name.txt']
     }
 

@@ -68,12 +68,12 @@ def test_pages(client):
 
 
 def test_get_page(client):
-    resp = client.get("/pages/docs/kareem-abdul-jabbar.txt")
+    resp = client.get("/pages/docs/derrick-rose.txt")
     assert resp.status_code == 200
-    assert b"Kareem Abdul-Jabbar" in resp.data
+    assert b"Derrick Martell Rose" in resp.data
 
 
 def test_edit_page(client):
-    get = client.get("/pages/docs/kareem-abdul-jabbar.txt/edit")
+    get = client.get("/pages/docs/derrick-rose.txt/edit")
     assert get.status_code == 200
     assert b"Editing" in get.data
