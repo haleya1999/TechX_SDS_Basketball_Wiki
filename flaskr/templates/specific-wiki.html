@@ -8,6 +8,8 @@
     <br>
     <br>
     <br>
-    <p>{{metadata}}</p>
+    <p>{{" ".join(metadata[:2])}}</p>
+    <p>{{" ".join(metadata[2:6])}}</p>
+    <p>{{" ".join(metadata[6:])}}</p>
 </html>
 {% endblock %}

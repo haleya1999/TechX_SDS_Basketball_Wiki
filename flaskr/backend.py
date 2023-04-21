@@ -79,13 +79,26 @@ class Backend:
         self.page = self.content_bucket.blob(name)
         return self.page
     
-    def get_metadata(self, name):
+    def get_metadata(self, filename):
+        """Returns all wiki pages.
+
+        Retrieves all wiki pages that have been uploaded to the wiki website.
+
+        Args:
+            self: Instance of the class.
+            filename: Filename including "docs/" prefix and ".txt" suffix
+
+        Returns:
+            Blob with metadata
+
+        Raises:
+            N/A
+        """
         bucket_name = "wiki-contents"
-        name = name[5:-4]
+        name = filename[5:-4]
         metadata_name = f"metadata/{name}-metadata.txt"
         # Will throw error if no corresponding metadata file
         metadata = self.content_bucket.blob(metadata_name)
-        
         return metadata
 
     def get_all_page_names(self):
