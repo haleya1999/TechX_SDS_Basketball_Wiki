@@ -26,12 +26,10 @@ def make_endpoints(app):
             data = page.read()
         
         metapage = backend.get_metadata(subpath)
-        print(metapage)
         if metapage:        
             with metapage.open("r") as metapage:
                 metadata = metapage.read()
                 metadata_lst = metadata.split()
-                print(metadata_lst)
 
         return render_template('specific-wiki.html', page=subpath, data=data, metadata=metadata_lst)
 

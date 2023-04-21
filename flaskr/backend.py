@@ -86,10 +86,10 @@ class Backend:
 
         Args:
             self: Instance of the class.
-            filename: Filename including "docs/" prefix and ".txt" suffix
+            filename: Filename including "docs/" prefix and ".txt" suffix.
 
         Returns:
-            Blob with metadata
+            Blob with metadata if corresponding metadata file
 
         Raises:
             N/A
@@ -97,9 +97,9 @@ class Backend:
         bucket_name = "wiki-contents"
         name = filename[5:-4]
         metadata_name = f"metadata/{name}-metadata.txt"
-        # Will throw error if no corresponding metadata file
         metadata = self.content_bucket.blob(metadata_name)
-        return metadata
+        if metadata:
+            return metadata
 
     def get_all_page_names(self):
         """Returns all wiki pages.
@@ -156,7 +156,6 @@ class Backend:
         source = source_name.rsplit('.', 1)
         metadata_file = source[0] + "-metadata"
         final_file_name = metadata_file + ".txt"
-        print(final_file_name)
         with open(final_file_name, "w") as f:
            # author, time, visits,
            # number of visits
@@ -199,8 +198,8 @@ class Backend:
             if not isinstance(blob, str):
                 f1 = blob.open('wb')
                 f1.write(bytes(m.hexdigest(), 'utf-8'))
-                self.user = User(blob.name)
-                login_user(self.user)
+                user = User(blob.name)
+                login_user(user)
                 return True
             else:
                 return True
@@ -228,16 +227,12 @@ class Backend:
             n.update(bytes(prefix + password, 'utf-8'))
             f1 = blob.open('r')
             password1 = str(f1.read())
-            print(password1)
             hashed_input_pword1 = str(
                 bytes(n.hexdigest(), 'utf-8').decode('utf-8'))
-            print(hashed_input_pword1)
             if password1 == hashed_input_pword1:
-                self.user = User(blob.name)
+                user = User(blob.name)
                 if blob.name != "LeBron James":
-                    login_user(self.user)
-                    print("User logged in")
-                # last stopped here - Maize
+                    login_user(user)
                 return True
             else:
                 return False
@@ -263,9 +258,6 @@ class Backend:
         Raises:
             N/A
         """
-        # for a given image name in GCS Bucket, make image public and return public url
-        print(img_name)
         blob = self.content_bucket.blob("pictures/" + img_name)
-        print(blob)
         blob.make_public()
         return blob.public_url
