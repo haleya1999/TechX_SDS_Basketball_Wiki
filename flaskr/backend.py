@@ -596,39 +596,3 @@ class Backend:
             return text_list.join(" ")                
         else:
             return ""
-
-    def update_player_metadata(self, filename, position, draft_year, teams):
-        '''
-        Adds player information to universal dictionary of all players uploaded 
-        to the wiki.
-
-        This will be used to conduct categorical searches on the pages uploaded to
-        the wiki.
-
-        Args:
-            self: An instance of the class.
-            filename: Name of the file user uploaded to the wiki.
-            position: Position the player plays that was inputted into HTML form.
-            draft_year: Year player was drafted
-            teams: List of teams player has played on.
-
-        Returns: 
-            N/A
-        '''
-        players_file = "all-players/all_players.pkl"
-        blob = self.content_bucket.blob(players_file)
-        try:
-            with blob.open("rb") as dictionary:
-                self.all_players = pickle.load(dictionary)    
-        except TypeError as e:
-            raise e              
-        except:
-            self.all_players = {}     
-        with blob.open("wb") as dictionary:
-            self.all_players[filename] = {
-                'position': position,
-                'draft_year': draft_year,
-                'teams': teams
-            }
-            pickle.dump(self.all_players, dictionary)
-
