@@ -109,6 +109,11 @@ def test_get_wiki_page():
     page = backend_test.get_wiki_page("blob-name")
     assert page.name == "LBJ"
 
+def test_get_searched_pages():
+    mock_storage_client = MockStorageClient()
+    backend_test = Backend(mock_storage_client)
+    page = backend_test.get_searched_pages("test")
+    assert backend_test.searched_pages == ["docs/test-file.txt"]
 
 def test_get_image():
     pass
