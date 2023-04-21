@@ -1,10 +1,12 @@
 {% extends "template.html" %} 
+{% block page_name %} All Pages {% endblock %}
 
 {% block content %}
 
- <h1>All Pages</h1>
+ <h1>Pages</h1>
+
 {% for page in pages %}
-  <a href="/pages/{{page.name}}">{{ page.name[5:] }}</a>
+  <a href="/pages/{{page.name}}">{{ page.name[5:-4].replace("-", " ") }}</a>
   <br>
 {% endfor %}
 

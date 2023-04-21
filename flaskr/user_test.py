@@ -1,10 +1,27 @@
-from flaskr.backend import Backend
+from flaskr.backend import User, Backend
 import pytest
 from unittest.mock import MagicMock, patch, Mock, mock_open
 from flask_login import LoginManager
 from flask import Flask
+from collections import defaultdict
 
+class User:
 
+    def __init__(self, username):
+        self.username = username
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.username
+        
 @pytest.fixture
 def create_app():
     app = Flask(__name__)
@@ -13,7 +30,7 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(user_id):
-        return
+        return User(user_id)
 
     # with app.app_context():
     #     yield
@@ -34,7 +51,7 @@ class MockFile:
 class MockBlob:
 
     def __init__(self, username):
-        self.name = username
+        self.name = username        
 
     def open(self, filename):
         return MockFile()
@@ -46,7 +63,7 @@ class MockBlob:
 class MockBucket:
 
     def __init__(self):
-        pass
+        self.blobs = defaultdict(MockBlob)
 
     def blob(self, name):
         return "LBJ"
@@ -63,6 +80,7 @@ class MockStorageClient:
 
     def __init__(self, login_info=None):
         self.login_info = login_info
+        self.bucket = defaultdict(MockBucket)
 
     def list_blobs(self, name, prefix=""):
         return ["LeBron James", "Stephen Curry", "Bill Russel", "Larry Bird"]
@@ -95,6 +113,7 @@ def test_login_with_invalid_username():
 
 # with app.app_context():
 def test_login_with_valid_username():
-    backend_test = Backend(MockStorageClient)
+    mock_storage_client = MockStorageClient()
+    backend_test = Backend(mock_storage_client)
     assert backend_test.sign_in("LeBron James", "password") == True
     assert backend_test.sign_in("LeBron James", "notpassword") == False
