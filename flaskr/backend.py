@@ -232,24 +232,25 @@ class Backend:
         num_words = len(text_list)
         search_results_counter = {}
         search_results = [] 
-        print("pages by name")
-        print(self.pages_by_name)
 
         # ensures duplicate pages are not returned
         for name in text_list:
             if name in self.pages_by_name:
-                if self.pages_by_name[name][0] in search_results_counter:
-                    search_results_counter[self.pages_by_name[name][0]] += 1
-                else:
-                    search_results_counter[self.pages_by_name[name][0]] = 1
+                for page_name in self.pages_by_name[name]:
+                    if page_name in search_results_counter:
+                        search_results_counter[page_name] += 1
+                    else:
+                        search_results_counter[page_name] = 1
 
-        for page in search_results_counter:
-            if search_results_counter[page] >= num_words:
-                search_results.append(page)
+        for page_name in search_results_counter:
+            if search_results_counter[page_name] >= num_words:
+                search_results.append(page_name)
         
         for page in all_pages:
+            print(f"Page: {page}")
             if page.name in search_results:
                 self.searched_pages.append(page)
+                
         print(self.searched_pages)
         return self.searched_pages    
 

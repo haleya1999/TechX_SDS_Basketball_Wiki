@@ -8,8 +8,8 @@ from unittest.mock import MagicMock, patch, Mock, mock_open
 
 class MockBlob:
 
-    def __init__(self):
-        self.name = "LBJ"
+    def __init__(self, filename = "LBJ"):
+        self.name = filename
 
     def __enter__(self):
         return self
@@ -58,7 +58,7 @@ class MockStorageClient:
         self.bucket = defaultdict(MockBucket)
 
     def list_blobs(self, name, prefix=""):
-        return ["LeBron James", "Stephen Curry", "Bill Russel", "Larry Bird"]
+        return [MockBlob("docs/lebron-james.txt"), MockBlob("docs/stephen-curry.txt"), MockBlob("docs/Bill-Russel.txt"), MockBlob("docs/larry-bird.txt"), MockBlob("docs/james-harden.txt")]
 
     def bucket(self, bucket_name):
         return self.bucket[bucket_name]
@@ -101,10 +101,10 @@ def test_get_all_pages():
     mock_storage_client = MockStorageClient()    
     backend_test = Backend(mock_storage_client)
     all_pages = backend_test.get_all_page_names()
-    assert all_pages == [
-        "LeBron James", "Stephen Curry", "Bill Russel", "Larry Bird"
-    ]
-
+    assert all_pages[0].name == "docs/lebron-james.txt"
+    assert all_pages[1].name == "docs/stephen-curry.txt"
+    assert all_pages[2].name == "docs/Bill-Russel.txt"
+    assert all_pages[3].name == "docs/larry-bird.txt"
 
 def test_get_wiki_page():
     mock_storage_client = MockStorageClient()
@@ -115,14 +115,22 @@ def test_get_wiki_page():
 def test_get_metadata():
     mock_storage_client = MockStorageClient()
     backend_test = Backend(mock_storage_client)
-    page = backend_test.get_metadata("blob-name")
-    assert page == "LBJ"
+    page = backend_test.get_metadata("docs/lebron-james.txt")
+    assert page.name == "LBJ"
+
+def test_get_searched_page():
+    mock_storage_client = MockStorageClient()
+    backend_test = Backend(mock_storage_client)
+    page = backend_test.get_searched_pages("james")
+    assert backend_test.searched_pages[0].name == "docs/lebron-james.txt"
 
 def test_get_searched_pages():
     mock_storage_client = MockStorageClient()
     backend_test = Backend(mock_storage_client)
-    page = backend_test.get_searched_pages("test")
-    assert backend_test.searched_pages == ["docs/test-file.txt"]
+    pages = backend_test.get_searched_pages("james")
+    assert backend_test.searched_pages[0].name == "docs/lebron-james.txt"
+    assert backend_test.searched_pages[1].name == "docs/james-harden.txt"
+
 
 def test_get_image():
     pass
@@ -146,10 +154,8 @@ def test_sort_by_name():
     mock_storage_client = MockStorageClient()
     backend_test = Backend(mock_storage_client)
     backend_test.update_sort_by_name("file-name.txt")
-    assert backend_test.pages_by_name == {
-        'file': ['docs/file-name.txt'],
-        'name': ['docs/file-name.txt']
-    }
+    assert backend_test.pages_by_name['file'] == ['docs/file-name.txt']
+    assert backend_test.pages_by_name['name'] == ['docs/file-name.txt']
 
 def test_create_metadata():
     test_file = MockFile("test_file.txt", "")
