@@ -50,7 +50,14 @@ def make_endpoints(app):
         page = backend.get_wiki_page(subpath)
         with page.open("r") as page:
             data = page.read()
-        return render_template('specific-wiki.html', page=subpath, data=data)
+        
+        metapage = backend.get_metadata(subpath)
+        if metapage:        
+            with metapage.open("r") as metapage:
+                metadata = metapage.read()
+                metadata_lst = metadata.split()
+
+        return render_template('specific-wiki.html', page=subpath, data=data, metadata=metadata_lst)
     
     # @app.route("/pages/<path:subpath>/edit", methods=['Get', 'POST'])
     # def edits(subpath):

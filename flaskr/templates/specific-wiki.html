@@ -9,6 +9,11 @@
     <h1>{{page[5:-4]}}</h1>
     <br>
     <p>{{data}}</p>
-
+    <br>
+    <br>
+    <br>
+    <p>{{" ".join(metadata[:2])}}</p>
+    <p>{{" ".join(metadata[2:6])}}</p>
+    <p>{{" ".join(metadata[6:])}}</p>
 </html>
 {% endblock %}

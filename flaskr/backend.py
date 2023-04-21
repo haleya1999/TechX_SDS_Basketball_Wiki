@@ -199,6 +199,28 @@ class Backend:
             self.update_metadata(metadata_file)
         return self.page
     
+    def get_metadata(self, filename):
+        """Returns all wiki pages.
+
+        Retrieves all wiki pages that have been uploaded to the wiki website.
+
+        Args:
+            self: Instance of the class.
+            filename: Filename including "docs/" prefix and ".txt" suffix.
+
+        Returns:
+            Blob with metadata if corresponding metadata file
+
+        Raises:
+            N/A
+        """
+        bucket_name = "wiki-contents"
+        name = filename[5:-4]
+        metadata_name = f"metadata/{name}-metadata.txt"
+        metadata = self.content_bucket.blob(metadata_name)
+        if metadata:
+            return metadata
+
     def get_searched_pages(self, text):
         self.searched_pages = []
         bucket_name = "wiki-contents"
@@ -473,10 +495,7 @@ class Backend:
         Raises:
             N/A
         """
-        # for a given image name in GCS Bucket, make image public and return public url
-        print(img_name)
         blob = self.content_bucket.blob("pictures/" + img_name)
-        print(blob)
         blob.make_public()
         return blob.public_url
 
